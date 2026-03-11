@@ -451,6 +451,22 @@ table tr:last-child td{border-bottom:none}
 .modal-box .close-modal:hover{color:var(--dark)}
 .modal-actions{display:flex;gap:12px;margin-top:24px}
 
+/* Overview Tab Toggle */
+.overview-tabs{display:flex;gap:4px;background:var(--white);border-radius:var(--radius-sm);padding:4px;margin-bottom:24px;box-shadow:var(--shadow);display:inline-flex}
+.overview-tab{padding:10px 24px;border-radius:6px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;background:transparent;color:var(--gray)}
+.overview-tab.active{background:var(--orange);color:var(--white)}
+.overview-tab i{margin-right:6px}
+
+/* Department Summary Cards */
+.dept-summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:24px}
+.dept-summary-card{background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border-left:4px solid var(--orange);transition:transform .25s ease,box-shadow .25s ease}
+.dept-summary-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.dept-summary-card .dept-name{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.dept-summary-card .dept-stats{font-size:13px;color:var(--gray);line-height:1.9}
+.dept-summary-card .dept-stats b{color:var(--dark)}
+.dept-summary-card .dept-bar{height:6px;background:var(--border);border-radius:3px;margin-top:10px}
+.dept-summary-card .dept-bar .fill{height:100%;border-radius:3px;background:var(--orange);transition:width .6s cubic-bezier(0.34,1.56,0.64,1)}
+
 /* Responsive */
 @media(max-width:1024px){
   .signup-page.active{grid-template-columns:1fr!important}
@@ -832,14 +848,26 @@ table tr:last-child td{border-bottom:none}
   </div>
   <div class="dash-content">
     <div class="dash-section active" id="secOverview">
-      <!-- Where to Focus -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px" id="focusCards"></div>
-      <div class="metric-cards" id="metricCards"></div>
-      <!-- Top 3 Users -->
-      <div style="background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:24px" id="top3Card"></div>
-      <div class="chart-card"><h3>Weekly Active Learners</h3><div class="chart-bars" id="chartBars"></div><div id="dayLearnerList" style="display:none;margin-top:20px;border-top:1px solid var(--border);padding-top:16px"></div></div>
-      <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:16px"><button class="btn btn-outline btn-sm" onclick="downloadReport('csv')"><i class="fas fa-file-csv"></i> Download CSV</button><button class="btn btn-primary btn-sm" onclick="downloadReport('xlsx')"><i class="fas fa-file-excel"></i> Download Excel</button></div>
-      <div class="performers-table"><h3>Top Performers</h3><table><thead><tr><th>Learner</th><th>Exercises Done</th><th>Active Time</th><th>Score</th></tr></thead><tbody id="perfBody"></tbody></table></div>
+      <!-- Overview Tab Toggle -->
+      <div class="overview-tabs" id="overviewTabs">
+        <button class="overview-tab active" onclick="switchOverviewTab('all',this)"><i class="fas fa-users"></i> All Learners</button>
+        <button class="overview-tab" onclick="switchOverviewTab('dept',this)"><i class="fas fa-building"></i> Department Wise</button>
+      </div>
+      <!-- ALL LEARNERS VIEW -->
+      <div id="overviewAll">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px" id="focusCards"></div>
+        <div class="metric-cards" id="metricCards"></div>
+        <div style="background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:24px" id="top3Card"></div>
+        <div class="chart-card"><h3>Weekly Active Learners</h3><div class="chart-bars" id="chartBars"></div><div id="dayLearnerList" style="display:none;margin-top:20px;border-top:1px solid var(--border);padding-top:16px"></div></div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:16px"><button class="btn btn-outline btn-sm" onclick="downloadReport('csv')"><i class="fas fa-file-csv"></i> Download CSV</button><button class="btn btn-primary btn-sm" onclick="downloadReport('xlsx')"><i class="fas fa-file-excel"></i> Download Excel</button></div>
+        <div class="performers-table"><h3>Top Performers</h3><table><thead><tr><th>Learner</th><th>Exercises Done</th><th>Active Time</th><th>Score</th></tr></thead><tbody id="perfBody"></tbody></table></div>
+      </div>
+      <!-- DEPARTMENT WISE VIEW -->
+      <div id="overviewDept" style="display:none">
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:16px"><button class="btn btn-outline btn-sm" onclick="downloadDeptReport('csv')"><i class="fas fa-file-csv"></i> Download Dept CSV</button><button class="btn btn-primary btn-sm" onclick="downloadDeptReport('xlsx')"><i class="fas fa-file-excel"></i> Download Dept Excel</button></div>
+        <div class="dept-summary-grid" id="deptSummaryGrid"></div>
+        <div class="performers-table" id="deptTableContainer"></div>
+      </div>
     </div>
     <div class="dash-section" id="secUsers">
       <div class="tab-bar">
@@ -1319,6 +1347,75 @@ function renderDashboard(){updateSidebar();updateSeatCount();renderOverview();re
 function updateSeatCount(){document.getElementById('seatText').textContent=D.users.length+'/'+D.learners+' Seats'}
 function updateSidebar(){const n=D.signup.name||'Admin';document.getElementById('sidebarAvatar').textContent=n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);document.getElementById('sidebarName').textContent=n}
 function showSec(el){document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');const s=el.dataset.sec;document.querySelectorAll('.dash-section').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');const t={secOverview:'Overview',secUsers:'New User',secCourses:'Create Course',secAssign:'Assign Course',secLearnerApp:'Learner App',secFaq:"FAQ's",secAbout:'About Us',secContact:'Contact Us',secKnowledge:'Knowledge Bank',secSettings:'Settings',secBilling:'Plan & Billing'};document.getElementById('dashTitle').textContent=t[s]||'Dashboard';if(s==='secUsers')renderUsers();if(s==='secCourses')resetCourseCreator()}
+
+/* ===== OVERVIEW TAB TOGGLE ===== */
+function switchOverviewTab(tab,btn){
+  document.querySelectorAll('.overview-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('overviewAll').style.display=tab==='all'?'block':'none';
+  document.getElementById('overviewDept').style.display=tab==='dept'?'block':'none';
+  if(tab==='dept')renderDeptWise();
+}
+
+function renderDeptWise(){
+  const grid=document.getElementById('deptSummaryGrid');
+  const colors=['#FF4D00','#3B82F6','#10B981','#F59E0B','#8B5CF6','#EF4444','#06B6D4','#EC4899'];
+  grid.innerHTML=D.departments.map((d,di)=>{
+    const du=D.users.filter(u=>u.dept===d);
+    const total=du.length;
+    const active=du.filter(u=>u.status==='active'||u.status==='started').length;
+    const avgP=total?Math.round(du.reduce((s,u)=>s+u.progress,0)/total):0;
+    const notStarted=du.filter(u=>u.status==='not_started'||u.status==='invited').length;
+    const clr=colors[di%colors.length];
+    return`<div class="dept-summary-card animate-in" style="animation-delay:${di*80}ms;border-left-color:${clr}">
+      <div class="dept-name"><i class="fas fa-building" style="color:${clr}"></i>${d}</div>
+      <div class="dept-stats">
+        Learners: <b>${total}</b><br>
+        Active: <b>${active}</b><br>
+        Not Started: <b>${notStarted}</b><br>
+        Avg Progress: <b>${avgP}%</b>
+      </div>
+      <div class="dept-bar"><div class="fill" style="width:0%;" data-dw="${avgP}"></div></div>
+    </div>`;
+  }).join('');
+  setTimeout(()=>{grid.querySelectorAll('.dept-bar .fill[data-dw]').forEach(b=>{b.style.width=b.dataset.dw+'%'})},100);
+  /* Department-wise table */
+  const tbl=document.getElementById('deptTableContainer');
+  const sm={active:'Active',started:'Exercise Started',not_started:'Not Yet Started',inactive:'Inactive',invited:'Invite Sent'};
+  let rows='';
+  D.departments.forEach(d=>{
+    const du=D.users.filter(u=>u.dept===d);
+    if(!du.length)return;
+    rows+=`<tr style="background:var(--orange-light)"><td colspan="5" style="font-weight:700;color:var(--dark);padding:12px"><i class="fas fa-building" style="color:var(--orange);margin-right:8px"></i>${d} (${du.length} learners)</td></tr>`;
+    du.forEach(u=>{
+      const ri=D.users.indexOf(u);
+      const bc=u.progress>=80?'var(--green)':u.progress>=50?'var(--yellow)':'var(--red)';
+      rows+=`<tr><td><b style="color:var(--orange);cursor:pointer" onclick="openLearnerProfile(${ri})">${u.name}</b></td><td>${sm[u.status]||u.status}</td><td><span class="progress-mini"><span class="fill" style="width:${u.progress}%;background:${bc}"></span></span>${u.progress}%</td><td>${Math.round(u.progress*0.48)}</td><td>${Math.round(u.progress*0.26)} min</td></tr>`;
+    });
+  });
+  tbl.innerHTML=`<h3><i class="fas fa-table" style="color:var(--orange);margin-right:8px"></i>Department Breakdown</h3><table><thead><tr><th>Learner</th><th>Status</th><th>Progress</th><th>Exercises</th><th>Active Time</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function downloadDeptReport(format){
+  const f=format||'csv';
+  showLoad('Generating department '+f.toUpperCase()+' report...');
+  setTimeout(()=>{
+    hideLoad();
+    const sm={active:'Active',started:'Exercise Started',not_started:'Not Yet Started',inactive:'Inactive',invited:'Invite Sent'};
+    const header='Department,Name,Email,Phone,Status,Progress %,Exercises,Active Time (min)';
+    const rows=[];
+    D.departments.forEach(d=>{
+      D.users.filter(u=>u.dept===d).forEach(u=>{
+        rows.push([d,u.name,u.email,u.phone,sm[u.status]||u.status,u.progress+'%',Math.round(u.progress*0.48),Math.round(u.progress*0.26*7)].join(','));
+      });
+    });
+    const csv=header+'\n'+rows.join('\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='SpeakX_Dept_Report_'+new Date().toISOString().slice(0,10)+'.'+f;a.click();URL.revokeObjectURL(url);
+    toast('Department report downloaded!','success');
+  },1500);
+}
 
 function renderOverview(){const u=D.users,tot=u.length,ex=u.reduce((s,x)=>s+Math.round(x.progress*0.48),0),avg=tot?Math.round(u.reduce((s,x)=>s+x.progress*0.26,0)/tot):0,comp=tot?Math.round(u.filter(x=>x.progress>=80).length/tot*100):0;
   /* Focus Cards */
