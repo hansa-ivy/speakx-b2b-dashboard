@@ -811,7 +811,7 @@ table tr:last-child td{border-bottom:none}
   <div class="logo">Speak<span>X</span></div>
   <div class="sidebar-section">Main Menu</div>
   <a class="sidebar-item active" data-sec="secOverview" onclick="showSec(this)"><i class="fas fa-chart-pie"></i> Overview</a>
-  <a class="sidebar-item" data-sec="secUsers" onclick="showSec(this)"><i class="fas fa-user-plus"></i> New User</a>
+  <a class="sidebar-item" data-sec="secUsers" onclick="showSec(this)"><i class="fas fa-users-gear"></i> User Management</a>
   <a class="sidebar-item" data-sec="secCourses" onclick="showSec(this)"><i class="fas fa-plus-circle"></i> Create Course</a>
   <a class="sidebar-item" data-sec="secAssign" onclick="showSec(this)"><i class="fas fa-paper-plane"></i> Assign Course</a>
   <a class="sidebar-item" data-sec="secLearnerApp" onclick="showSec(this)"><i class="fas fa-mobile-screen"></i> Learner App</a>
@@ -842,7 +842,6 @@ table tr:last-child td{border-bottom:none}
           <div class="notif-footer"><a href="#" onclick="markAllNotifRead();return false">Mark all as read</a></div>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="switchTab('tabAdd',document.querySelectorAll('.tab-btn')[1]);showSec(document.querySelector('[data-sec=secUsers]'))"><i class="fas fa-user-plus"></i> New User</button>
       <button class="btn btn-primary btn-sm" onclick="showSec(document.querySelector('[data-sec=secCourses]'))"><i class="fas fa-plus"></i> Create Course</button>
     </div>
   </div>
@@ -918,7 +917,7 @@ table tr:last-child td{border-bottom:none}
     </div>
     <!-- Individual Learner Profile -->
     <div class="dash-section" id="secLearnerProfile">
-      <div style="margin-bottom:16px"><a href="#" class="back-link" onclick="showSec(document.querySelector('[data-sec=secUsers]'));return false"><i class="fas fa-arrow-left"></i> Back to New User</a></div>
+      <div style="margin-bottom:16px"><a href="#" class="back-link" onclick="showSec(document.querySelector('[data-sec=secUsers]'));return false"><i class="fas fa-arrow-left"></i> Back to User Management</a></div>
       <div class="lp-header">
         <div class="lp-avatar" id="lpAvatar" style="background:var(--orange)">PS</div>
         <div class="lp-meta">
@@ -1346,7 +1345,7 @@ function animateNum(el,target,suffix,dur){dur=dur||800;let start=null;const isFl
 function renderDashboard(){updateSidebar();updateSeatCount();renderOverview();renderUsers();renderAssignDropdown();populateSettings();renderBilling();renderFaqs();D.courseStep=1;resetCourseCreator();initNotifications()}
 function updateSeatCount(){document.getElementById('seatText').textContent=D.users.length+'/'+D.learners+' Seats'}
 function updateSidebar(){const n=D.signup.name||'Admin';document.getElementById('sidebarAvatar').textContent=n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);document.getElementById('sidebarName').textContent=n}
-function showSec(el){document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');const s=el.dataset.sec;document.querySelectorAll('.dash-section').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');const t={secOverview:'Overview',secUsers:'New User',secCourses:'Create Course',secAssign:'Assign Course',secLearnerApp:'Learner App',secFaq:"FAQ's",secAbout:'About Us',secContact:'Contact Us',secKnowledge:'Knowledge Bank',secSettings:'Settings',secBilling:'Plan & Billing'};document.getElementById('dashTitle').textContent=t[s]||'Dashboard';if(s==='secUsers')renderUsers();if(s==='secCourses')resetCourseCreator()}
+function showSec(el){document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');const s=el.dataset.sec;document.querySelectorAll('.dash-section').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');const t={secOverview:'Overview',secUsers:'User Management',secCourses:'Create Course',secAssign:'Assign Course',secLearnerApp:'Learner App',secFaq:"FAQ's",secAbout:'About Us',secContact:'Contact Us',secKnowledge:'Knowledge Bank',secSettings:'Settings',secBilling:'Plan & Billing'};document.getElementById('dashTitle').textContent=t[s]||'Dashboard';if(s==='secUsers')renderUsers();if(s==='secCourses')resetCourseCreator()}
 
 /* ===== OVERVIEW TAB TOGGLE ===== */
 function switchOverviewTab(tab,btn){
