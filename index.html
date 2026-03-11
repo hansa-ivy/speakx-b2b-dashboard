@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SpeakX for Business</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--orange:#FF6B2C;--orange-light:#FFF4EF;--dark:#0F172A;--dark2:#1E293B;--gray:#64748B;--light:#F8FAFC;--border:#E2E8F0;--green:#10B981;--red:#EF4444;--blue:#3B82F6;--yellow:#F59E0B;--white:#FFFFFF;--radius:12px;--radius-sm:8px;--radius-pill:20px;--shadow-sm:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);--shadow:0 4px 6px rgba(0,0,0,0.04),0 2px 4px rgba(0,0,0,0.06);--shadow-md:0 10px 25px rgba(0,0,0,0.06),0 4px 10px rgba(0,0,0,0.04);--shadow-lg:0 20px 40px rgba(0,0,0,0.08),0 8px 16px rgba(0,0,0,0.04)}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.animate-in{animation:fadeInUp .4s ease both;opacity:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--gray);background:var(--white);line-height:1.6;overflow-x:hidden}
+.page{display:none}
+.page.active{display:block}
+.signup-page.active{display:grid!important;grid-template-columns:1fr 1fr;min-height:100vh}
+.otp-page.active{display:flex!important;align-items:center;justify-content:center;min-height:100vh;background:var(--light)}
+.payment-page.active{display:flex!important;align-items:center;justify-content:center;min-height:100vh;background:var(--light);padding:40px 20px}
+.dashboard-page.active{display:flex!important;min-height:100vh}
+
+/* Toast */
+#toast{position:fixed;bottom:30px;right:30px;padding:14px 24px;border-radius:var(--radius-sm);color:var(--white);font-size:14px;font-weight:500;z-index:10000;transform:translateY(100px);opacity:0;transition:all .3s ease;max-width:400px}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.success{background:var(--green)}
+#toast.error{background:var(--red)}
+#toast.info{background:var(--dark)}
+
+/* Loading */
+#loading{display:none;position:fixed;inset:0;background:rgba(255,255,255,0.92);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+#loading.show{display:flex}
+.spinner{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadingText{font-size:15px;color:var(--dark);font-weight:500}
+
+/* ===== NAVBAR ===== */
+.navbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:0 5%}
+.nav-inner{max-width:1300px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:68px}
+.nav-logo{font-size:24px;font-weight:800;color:var(--dark);text-decoration:none;letter-spacing:-0.5px}
+.nav-logo span{color:var(--orange)}
+.nav-links{display:flex;gap:32px}
+.nav-links a{text-decoration:none;color:var(--gray);font-size:14px;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--orange)}
+.nav-cta{display:flex;gap:12px;align-items:center}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s ease;font-family:inherit;text-decoration:none}
+.btn:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:var(--orange);color:var(--white);box-shadow:0 4px 12px rgba(255,107,44,0.3)}
+.btn-primary:hover{background:#E55A1B;transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,107,44,0.4)}
+.btn-outline{background:transparent;color:var(--orange);border:2px solid var(--orange)}
+.btn-outline:hover{background:var(--orange);color:var(--white)}
+.btn-ghost{background:var(--light);color:var(--gray);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--orange);color:var(--orange)}
+.btn-sm{padding:8px 18px;font-size:13px}
+.btn-lg{padding:16px 36px;font-size:16px}
+.btn-block{width:100%;justify-content:center}
+
+/* ===== HERO ===== */
+.hero{padding:140px 5% 80px;max-width:1300px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.hero h1{font-size:48px;font-weight:800;color:var(--dark);line-height:1.15;margin-bottom:20px;letter-spacing:-1px}
+.hero h1 span{color:var(--orange)}
+.hero-sub{font-size:17px;color:var(--gray);margin-bottom:36px;line-height:1.7;max-width:500px}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap}
+.phone-mock{width:280px;height:560px;background:var(--dark);border-radius:40px;padding:12px;position:relative;box-shadow:var(--shadow),0 20px 60px rgba(0,0,0,0.15);margin:0 auto}
+.phone-inner{width:100%;height:100%;background:var(--white);border-radius:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;position:relative;overflow:hidden}
+.phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:28px;background:var(--dark);border-radius:0 0 16px 16px;z-index:2}
+.phone-inner .sx-icon{width:70px;height:70px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:var(--white);margin-bottom:16px}
+.phone-inner h3{font-size:18px;color:var(--dark);font-weight:700}
+.phone-inner p{font-size:13px;color:var(--gray);margin-top:6px}
+.float-card{position:absolute;background:var(--white);border-radius:var(--radius);padding:14px 20px;box-shadow:var(--shadow);font-size:13px;font-weight:600;color:var(--dark);animation:float 3s ease-in-out infinite;white-space:nowrap}
+.float-card i{color:var(--orange);margin-right:6px}
+.float-card:first-of-type{top:80px;right:-60px;animation-delay:0s}
+.float-card:last-of-type{bottom:100px;left:-50px;animation-delay:1.5s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.hero-visual{position:relative;display:flex;justify-content:center}
+
+/* ===== STATS ===== */
+.stats-bar{background:var(--dark);padding:48px 5%}
+.stats-grid{max-width:1300px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center}
+.stat-num{font-size:42px;font-weight:800;color:var(--orange);letter-spacing:-1px}
+.stat-label{font-size:14px;color:rgba(255,255,255,0.6);margin-top:4px;font-weight:500}
+
+/* ===== FEATURES ===== */
+.features{padding:80px 5%;max-width:1300px;margin:0 auto}
+.section-header{text-align:center;margin-bottom:56px}
+.section-header h2{font-size:36px;font-weight:800;color:var(--dark);margin-bottom:12px}
+.section-header p{font-size:16px;color:var(--gray);max-width:600px;margin:0 auto}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.feat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:32px;transition:all .3s}
+.feat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.feat-icon{width:56px;height:56px;border-radius:14px;background:var(--orange-light);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px}
+.feat-card h3{font-size:18px;font-weight:600;color:var(--dark);margin-bottom:8px}
+.feat-card p{font-size:14px;color:var(--gray);line-height:1.6}
+
+/* ===== PRICING ===== */
+.pricing{padding:80px 5%;background:var(--light)}
+.pricing-box{max-width:560px;margin:0 auto;background:var(--white);border-radius:var(--radius);padding:40px;box-shadow:var(--shadow);text-align:center}
+.toggle-wrap{display:inline-flex;background:var(--light);border-radius:50px;padding:4px;margin-bottom:32px}
+.toggle-btn{padding:10px 28px;border-radius:50px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .25s;font-family:inherit;background:transparent;color:var(--gray)}
+.toggle-btn.active{background:var(--orange);color:var(--white)}
+.mrp-line{font-size:15px;color:var(--gray);margin-bottom:4px}
+.mrp-line .strike{text-decoration:line-through;color:var(--gray)}
+.discount-badge{display:inline-block;padding:4px 14px;border-radius:50px;background:#D1FAE5;color:var(--green);font-size:13px;font-weight:700;margin-bottom:20px}
+.slider-display{margin-bottom:16px}
+.slider-num{font-size:52px;font-weight:800;color:var(--dark);letter-spacing:-2px}
+.slider-sub{font-size:15px;color:var(--gray)}
+input[type=range]{width:100%;-webkit-appearance:none;height:8px;background:var(--border);border-radius:4px;outline:none;margin:16px 0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--orange);cursor:pointer;box-shadow:0 2px 8px rgba(255,107,44,0.4)}
+.slider-range{display:flex;justify-content:space-between;font-size:13px;color:var(--gray);margin-bottom:20px}
+.price-breakdown{text-align:left;border-top:1px solid var(--border);padding-top:20px;margin-top:20px}
+.price-row{display:flex;justify-content:space-between;padding:10px 0;font-size:14px}
+.price-row .lbl{color:var(--gray)}
+.price-row .val{font-weight:600;color:var(--dark)}
+.price-row.total{border-top:2px solid var(--dark);padding-top:14px;margin-top:8px}
+.price-row.total .val{font-size:24px;font-weight:800;color:var(--orange)}
+.pricing-cta{margin-top:28px}
+
+/* ===== SIGNUP ===== */
+.signup-left{background:linear-gradient(160deg,var(--dark) 0%,var(--dark2) 100%);color:var(--white);padding:60px;display:flex;flex-direction:column;justify-content:center}
+.signup-left h2{font-size:32px;font-weight:800;margin-bottom:32px;line-height:1.2}
+.benefit-list{list-style:none;display:flex;flex-direction:column;gap:16px}
+.benefit-list li{display:flex;align-items:center;gap:12px;font-size:15px;color:rgba(255,255,255,0.8)}
+.benefit-list li i{color:var(--orange);font-size:18px}
+.signup-right{padding:60px;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow-y:auto}
+.signup-form{width:100%;max-width:520px}
+.signup-form h2{font-size:28px;font-weight:800;color:var(--dark);margin-bottom:6px}
+.signup-form .subtitle{font-size:14px;color:var(--gray);margin-bottom:32px}
+.form-group{margin-bottom:20px;position:relative}
+.form-group label{display:block;font-size:13px;font-weight:600;color:var(--dark);margin-bottom:6px}
+.form-group input,.form-group select{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;outline:none;transition:border-color .2s;background:var(--white)}
+.form-group input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,107,44,0.1)}
+.form-group.error input,.form-group.error select{border-color:var(--red)}
+.form-group .err-msg{display:none;font-size:12px;color:var(--red);margin-top:4px}
+.form-group.error .err-msg{display:block}
+.phone-input{display:flex;gap:8px}
+.phone-input select{width:80px;flex-shrink:0}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--gray);text-decoration:none;margin-bottom:24px}
+.back-link:hover{color:var(--orange)}
+.switch-link{text-align:center;margin-top:20px;font-size:13px;color:var(--gray)}
+.switch-link a{color:var(--orange);font-weight:600;text-decoration:none;cursor:pointer}
+
+/* ===== OTP ===== */
+.otp-card{background:var(--white);border-radius:var(--radius);padding:48px;box-shadow:var(--shadow);max-width:500px;width:100%;text-align:center;margin:20px}
+.otp-icon{width:64px;height:64px;border-radius:50%;background:var(--orange-light);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px}
+.otp-card h2{font-size:24px;font-weight:800;color:var(--dark);margin-bottom:8px}
+.otp-card .subtitle{font-size:14px;color:var(--gray);margin-bottom:28px}
+.otp-section{margin-bottom:24px;text-align:left}
+.otp-section label{font-size:13px;font-weight:600;color:var(--dark);margin-bottom:8px;display:block}
+.otp-hint{font-size:12px;color:var(--green);font-weight:600;margin-bottom:8px}
+.otp-inputs{display:flex;gap:8px;justify-content:center}
+.otp-inputs input{width:48px;height:56px;text-align:center;font-size:20px;font-weight:700;border:1.5px solid var(--border);border-radius:var(--radius-sm);outline:none;transition:all .2s;font-family:inherit}
+.otp-inputs input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,107,44,0.1)}
+.otp-inputs input.filled{border-color:var(--orange);background:var(--orange-light)}
+.otp-inputs input.wrong{border-color:var(--red);background:#FEF2F2}
+.otp-timer{font-size:13px;color:var(--gray);margin-top:20px}
+.otp-timer a{color:var(--orange);font-weight:600;cursor:pointer;text-decoration:none}
+.otp-error{font-size:13px;color:var(--red);margin-top:12px;display:none}
+.otp-error.show{display:block}
+
+/* ===== PAYMENT ===== */
+.payment-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:960px;width:100%}
+.pay-summary{background:var(--white);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow)}
+.pay-summary h3{font-size:18px;font-weight:700;color:var(--dark);margin-bottom:24px}
+.summary-row{display:flex;justify-content:space-between;padding:10px 0;font-size:14px;border-bottom:1px solid var(--border)}
+.summary-row:last-of-type{border-bottom:none}
+.summary-row .lbl{color:var(--gray)}
+.summary-row .val{font-weight:600;color:var(--dark)}
+.summary-row .val.green{color:var(--green)}
+.summary-row.total-row{border-top:2px solid var(--dark);border-bottom:none;padding-top:16px;margin-top:8px}
+.summary-row.total-row .val{font-size:22px;font-weight:800;color:var(--orange)}
+.trial-badge{background:#D1FAE5;border-radius:var(--radius-sm);padding:14px;margin-top:20px;font-size:13px;color:#065F46;display:flex;align-items:center;gap:8px}
+.trial-badge i{color:var(--green);font-size:16px}
+.pay-form{background:var(--white);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow)}
+.pay-form h3{font-size:18px;font-weight:700;color:var(--dark);margin-bottom:4px}
+.pay-form .powered{font-size:12px;color:var(--gray);margin-bottom:24px}
+.pay-tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--light);border-radius:var(--radius-sm);padding:4px}
+.pay-tab{flex:1;padding:10px;text-align:center;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--gray);transition:all .2s;border:none;background:transparent;font-family:inherit}
+.pay-tab.active{background:var(--white);color:var(--orange);box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+.pay-tab i{display:block;font-size:18px;margin-bottom:4px}
+.pay-method{display:none}
+.pay-method.active{display:block}
+.secure-badge{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray);margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.secure-badge i{color:var(--green)}
+
+/* ===== DASHBOARD ===== */
+.dash-sidebar{width:260px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;overflow-y:auto}
+.dash-sidebar .logo{padding:20px 24px;font-size:22px;font-weight:800;color:var(--dark);border-bottom:1px solid var(--border)}
+.dash-sidebar .logo span{color:var(--orange)}
+.sidebar-section{padding:16px 12px 8px;font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:1px}
+.sidebar-item{display:flex;align-items:center;gap:12px;padding:11px 20px;margin:2px 8px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;color:var(--gray);cursor:pointer;transition:all .2s;text-decoration:none}
+.sidebar-item:hover{background:var(--light);color:var(--dark)}
+.sidebar-item.active{background:var(--orange-light);color:var(--orange);font-weight:600}
+.sidebar-item i{width:20px;text-align:center;font-size:15px}
+.sidebar-user{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.sidebar-avatar{width:40px;height:40px;border-radius:50%;background:var(--orange);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.sidebar-user-info{font-size:13px}
+.sidebar-user-info .name{font-weight:600;color:var(--dark)}
+.sidebar-user-info .role{color:var(--gray);font-size:12px}
+.dash-main{margin-left:260px;flex:1;background:var(--light);min-height:100vh}
+.dash-topbar{background:var(--white);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+.dash-topbar h1{font-size:22px;font-weight:700;color:var(--dark)}
+.topbar-actions{display:flex;gap:12px;align-items:center}
+.notif-bell{position:relative;width:40px;height:40px;border-radius:50%;background:var(--light);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;font-size:16px;color:var(--gray);transition:all .2s ease}
+.notif-bell:hover{background:var(--orange-light);color:var(--orange);transform:scale(1.05)}
+.notif-dot{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--red)}
+.notif-wrapper{position:relative}
+.notif-dropdown{position:absolute;top:48px;right:0;width:340px;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:200;display:none;overflow:hidden;animation:fadeInUp .25s ease both}
+.notif-dropdown.open{display:block}
+.notif-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
+.notif-header h4{font-size:14px;font-weight:700;color:var(--dark)}
+.notif-header .notif-count{font-size:11px;background:var(--orange);color:#fff;border-radius:10px;padding:2px 8px;font-weight:700}
+.notif-list{max-height:320px;overflow-y:auto}
+.notif-item{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s ease}
+.notif-item:hover{background:var(--orange-light)}
+.notif-item.unread{background:#fff8f5}
+.notif-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.notif-body{flex:1;min-width:0}
+.notif-body p{font-size:13px;color:var(--dark);line-height:1.4;margin:0}
+.notif-body .notif-time{font-size:11px;color:var(--gray);margin-top:3px}
+.notif-footer{padding:10px 16px;text-align:center;border-top:1px solid var(--border)}
+.notif-footer a{font-size:12px;color:var(--orange);font-weight:600;text-decoration:none}
+.dash-content{padding:32px}
+.dash-section{display:none;opacity:0}
+.dash-section.active{display:block;animation:fadeInUp .35s ease both}
+
+/* Overview */
+.metric-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:32px}
+.metric-card{background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border-top:3px solid var(--orange);transition:transform .25s ease,box-shadow .25s ease}
+.metric-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.metric-card .mc-label{font-size:13px;color:var(--gray);font-weight:500;margin-bottom:8px}
+.metric-card .mc-val{font-size:32px;font-weight:800;color:var(--dark);letter-spacing:-1px}
+.metric-card .mc-change{font-size:12px;font-weight:600;margin-top:6px;display:flex;align-items:center;gap:4px}
+.mc-change.up{color:var(--green)}
+.mc-change.down{color:var(--red)}
+.chart-card{background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:32px;transition:box-shadow .25s ease}
+.chart-card:hover{box-shadow:var(--shadow-md)}
+.chart-card h3{font-size:16px;font-weight:700;color:var(--dark);margin-bottom:20px}
+.chart-bars{display:flex;align-items:flex-end;gap:16px;height:200px;padding:0 8px}
+.chart-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;cursor:pointer;transition:opacity .2s ease}
+.chart-bar .bar{width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--orange),#FF8B5C);transition:height .5s cubic-bezier(0.34,1.56,0.64,1);position:relative;cursor:pointer;min-height:4px;margin-top:auto}
+.chart-bar .bar:hover{opacity:0.85}
+.chart-bar .bar-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--dark)}
+.chart-bar .bar-label{font-size:12px;color:var(--gray);font-weight:500}
+.performers-table{background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);transition:box-shadow .25s ease}
+.performers-table:hover{box-shadow:var(--shadow-md)}
+.performers-table h3{font-size:16px;font-weight:700;color:var(--dark);margin-bottom:16px}
+table{width:100%;border-collapse:collapse}
+table th{text-align:left;padding:10px 12px;font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border)}
+table td{padding:12px;font-size:14px;color:var(--dark);border-bottom:1px solid var(--border)}
+table tbody tr{transition:background .15s ease}
+table tbody tr:hover{background:var(--orange-light)}
+table tr:last-child td{border-bottom:none}
+
+/* User Management */
+.tab-bar{display:flex;gap:4px;background:var(--white);border-radius:var(--radius-sm);padding:4px;margin-bottom:24px;box-shadow:var(--shadow)}
+.tab-btn{padding:10px 20px;border-radius:6px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;background:transparent;color:var(--gray)}
+.tab-btn.active{background:var(--orange);color:var(--white)}
+.tab-content{display:none;opacity:0}
+.tab-content.active{display:block;animation:fadeInUp .3s ease both}
+.filter-bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.filter-bar input,.filter-bar select{padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;outline:none;background:var(--white)}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--orange)}
+.filter-bar input{flex:1;min-width:200px}
+.users-table{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow-x:auto}
+.status-badge{display:inline-block;padding:4px 12px;border-radius:50px;font-size:12px;font-weight:600}
+.status-active{background:#D1FAE5;color:#065F46}
+.status-pending{background:#FEF3C7;color:#92400E}
+.status-inactive{background:#FEE2E2;color:#991B1B}
+.progress-mini{width:60px;height:6px;background:var(--border);border-radius:3px;display:inline-block;vertical-align:middle;margin-right:6px}
+.progress-mini .fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(0.34,1.56,0.64,1)}
+.action-btn{background:none;border:none;cursor:pointer;font-size:14px;padding:4px 8px;border-radius:4px;transition:all .2s;color:var(--gray)}
+.action-btn:hover{background:var(--orange-light);color:var(--orange)}
+.action-btn.del:hover{background:#FEE2E2;color:var(--red)}
+.add-user-form{background:var(--white);border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);max-width:500px}
+.bulk-form{background:var(--white);border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);max-width:600px}
+.bulk-form textarea{width:100%;height:160px;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Inter',monospace;font-size:13px;resize:vertical;outline:none}
+.bulk-form textarea:focus{border-color:var(--orange)}
+.bulk-form .hint{font-size:12px;color:var(--gray);margin:8px 0 16px}
+
+/* Course Creator */
+.steps-bar{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:40px}
+.step-circle{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;border:2px solid var(--border);color:var(--gray);background:var(--white);transition:all .3s;position:relative;z-index:2}
+.step-circle.active{border-color:var(--orange);color:var(--orange);background:var(--orange-light)}
+.step-circle.done{border-color:var(--green);color:var(--white);background:var(--green)}
+.step-line{width:80px;height:2px;background:var(--border);transition:background .3s}
+.step-line.done{background:var(--green)}
+.step-label{font-size:12px;color:var(--gray);margin-top:6px;text-align:center;font-weight:500}
+.step-item{display:flex;flex-direction:column;align-items:center}
+.course-step{display:none}
+.course-step.active{display:block}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:60px;text-align:center;cursor:pointer;transition:all .3s;background:var(--white)}
+.upload-zone:hover{border-color:var(--orange);background:var(--orange-light)}
+.upload-zone i{font-size:48px;color:var(--orange);margin-bottom:16px}
+.upload-zone h3{font-size:16px;color:var(--dark);margin-bottom:4px}
+.upload-zone p{font-size:13px;color:var(--gray)}
+.file-list{margin-top:24px;display:flex;flex-direction:column;gap:10px}
+.file-item{display:flex;align-items:center;gap:12px;padding:14px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.file-item i.fa-file-pdf{color:var(--red);font-size:20px}
+.file-item i.fa-file-word{color:var(--blue);font-size:20px}
+.file-item .file-info{flex:1;font-size:13px;color:var(--dark);font-weight:500}
+.file-item .file-size{font-size:12px;color:var(--gray)}
+.file-item i.fa-check-circle{color:var(--green);font-size:16px}
+
+/* AI Chat */
+.chat-container{max-width:680px;margin:0 auto;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;height:500px}
+.chat-header{padding:16px 20px;background:var(--dark);color:var(--white);font-size:15px;font-weight:600;display:flex;align-items:center;gap:10px}
+.chat-header .ai-dot{width:10px;height:10px;border-radius:50%;background:var(--green)}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+.chat-msg{max-width:80%;padding:12px 16px;border-radius:var(--radius);font-size:14px;line-height:1.6;white-space:pre-wrap}
+.chat-msg.ai{background:var(--light);color:var(--dark);align-self:flex-start;border-bottom-left-radius:4px}
+.chat-msg.user{background:var(--orange);color:var(--white);align-self:flex-end;border-bottom-right-radius:4px}
+.typing-indicator{display:flex;gap:4px;padding:12px 16px;align-self:flex-start}
+.typing-indicator span{width:8px;height:8px;border-radius:50%;background:var(--gray);animation:bounce 1.4s infinite}
+.typing-indicator span:nth-child(2){animation-delay:0.2s}
+.typing-indicator span:nth-child(3){animation-delay:0.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
+.chat-input-bar{display:flex;gap:8px;padding:16px;border-top:1px solid var(--border)}
+.chat-input-bar input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;outline:none}
+.chat-input-bar input:focus{border-color:var(--orange)}
+
+/* Course Preview */
+.course-preview-header{background:linear-gradient(135deg,var(--orange),#FF8B5C);border-radius:var(--radius);padding:32px;color:var(--white);margin-bottom:24px;display:flex;align-items:center;gap:20px}
+.course-preview-header i{font-size:40px;opacity:0.9}
+.course-preview-header h3{font-size:22px;font-weight:700}
+.course-preview-header .meta{font-size:14px;opacity:0.85;margin-top:4px}
+.module-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:18px 20px;display:flex;align-items:center;gap:16px;margin-bottom:10px;transition:all .2s}
+.module-card:hover{border-color:var(--orange);box-shadow:0 2px 12px rgba(255,107,44,0.1)}
+.module-num{width:36px;height:36px;border-radius:50%;background:var(--orange-light);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.module-info{flex:1}
+.module-info h4{font-size:15px;font-weight:600;color:var(--dark)}
+.module-info p{font-size:12px;color:var(--gray);margin-top:2px}
+.module-meta{text-align:right;font-size:12px;color:var(--gray)}
+.module-meta span{display:block}
+
+/* Assign Course */
+.assign-form{background:var(--white);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow);max-width:560px}
+.assign-form h3{font-size:18px;font-weight:700;color:var(--dark);margin-bottom:24px}
+.checkbox-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+.checkbox-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--orange)}
+.checkbox-row label{font-size:14px;color:var(--dark)}
+
+/* Learner App */
+.learner-layout{display:grid;grid-template-columns:340px 1fr;gap:40px;align-items:start}
+.learner-phone{width:320px;height:640px;background:var(--dark);border-radius:40px;padding:12px;box-shadow:var(--shadow)}
+.learner-screen{width:100%;height:100%;background:var(--white);border-radius:30px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.ls-status{display:flex;justify-content:space-between;padding:8px 20px;font-size:11px;font-weight:600;color:var(--dark)}
+.ls-header{background:var(--orange);color:var(--white);padding:14px 20px;font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}
+.ls-header .back-arr{cursor:pointer;font-size:14px}
+.ls-body{flex:1;overflow-y:auto;padding:16px}
+.ls-nav{display:flex;border-top:1px solid var(--border);padding:10px 0}
+.ls-nav-item{flex:1;text-align:center;font-size:10px;color:var(--gray);cursor:pointer;padding:6px 0}
+.ls-nav-item.active{color:var(--orange)}
+.ls-nav-item i{display:block;font-size:16px;margin-bottom:2px}
+.ls-screen{display:none}
+.ls-screen.active{display:flex;flex-direction:column;height:100%}
+.learner-info{padding:10px}
+.learner-info h3{font-size:20px;font-weight:700;color:var(--dark);margin-bottom:8px}
+.learner-info p{font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:20px}
+.learner-nav-btns{display:flex;flex-direction:column;gap:10px}
+.learner-nav-btn{padding:12px 20px;border-radius:var(--radius-sm);border:1px solid var(--border);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;background:var(--white);text-align:left;display:flex;align-items:center;gap:10px;font-family:inherit;color:var(--dark)}
+.learner-nav-btn:hover{border-color:var(--orange);color:var(--orange);background:var(--orange-light)}
+.learner-nav-btn i{color:var(--orange)}
+.lp-welcome{background:linear-gradient(135deg,var(--orange),#FF8B5C);border-radius:var(--radius);padding:16px;color:var(--white);margin-bottom:16px}
+.lp-welcome h4{font-size:15px;font-weight:700;margin-bottom:8px}
+.lp-progress-bar{height:6px;background:rgba(255,255,255,0.3);border-radius:3px}
+.lp-progress-bar .fill{height:100%;background:var(--white);border-radius:3px}
+.lp-welcome .pct{font-size:12px;margin-top:4px;opacity:0.9}
+.lp-course{padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.lp-course-icon{width:36px;height:36px;border-radius:8px;background:var(--orange-light);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.lp-course-info{flex:1;font-size:13px}
+.lp-course-info strong{color:var(--dark);display:block;font-size:13px}
+.lp-course-info span{color:var(--gray);font-size:11px}
+.lesson-content h4{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:8px}
+.lesson-content p{font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:12px}
+.key-phrase{background:var(--orange-light);padding:10px;border-radius:var(--radius-sm);border-left:3px solid var(--orange);font-size:13px;color:var(--dark);margin-bottom:16px}
+.speak-section{background:var(--light);border-radius:var(--radius-sm);padding:14px;text-align:center}
+.speak-section p{font-size:12px;font-weight:600;color:var(--dark);margin-bottom:8px}
+.wave-bars{display:flex;align-items:center;justify-content:center;gap:3px;height:30px;margin-bottom:10px}
+.wave-bars span{width:3px;background:var(--orange);border-radius:2px;animation:wave 1s ease-in-out infinite}
+.wave-bars span:nth-child(1){height:12px;animation-delay:0s}
+.wave-bars span:nth-child(2){height:20px;animation-delay:0.1s}
+.wave-bars span:nth-child(3){height:28px;animation-delay:0.2s}
+.wave-bars span:nth-child(4){height:16px;animation-delay:0.3s}
+.wave-bars span:nth-child(5){height:24px;animation-delay:0.4s}
+@keyframes wave{0%,100%{transform:scaleY(1)}50%{transform:scaleY(0.4)}}
+.lp-chat{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.lp-msg{max-width:85%;padding:10px 12px;border-radius:var(--radius-sm);font-size:12px;line-height:1.5}
+.lp-msg.ai{background:var(--light);color:var(--dark);align-self:flex-start}
+.lp-msg.user{background:var(--orange);color:var(--white);align-self:flex-end}
+.voice-bar{display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:50px;margin:8px 12px 12px}
+.voice-bar .mic-btn{width:36px;height:36px;border-radius:50%;background:var(--orange);color:var(--white);display:flex;align-items:center;justify-content:center;border:none;font-size:14px;cursor:pointer}
+.voice-bar input{flex:1;border:none;background:transparent;font-size:13px;outline:none;font-family:inherit}
+
+/* Settings */
+.settings-form{background:var(--white);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow);max-width:640px}
+.settings-form h3{font-size:18px;font-weight:700;color:var(--dark);margin-bottom:24px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* Billing */
+.billing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+.bill-card{background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);transition:transform .25s ease,box-shadow .25s ease}
+.bill-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.bill-card h3{font-size:16px;font-weight:700;color:var(--dark);margin-bottom:20px}
+.bill-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid var(--border)}
+.bill-row:last-child{border-bottom:none}
+.bill-row .lbl{color:var(--gray)}
+.bill-row .val{font-weight:600;color:var(--dark)}
+.utilisation-bar{height:8px;background:var(--border);border-radius:4px;margin:12px 0 6px}
+.utilisation-bar .fill{height:100%;background:var(--orange);border-radius:4px;transition:width .6s}
+.invoices-card{background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}
+.invoices-card h3{font-size:16px;font-weight:700;color:var(--dark);margin-bottom:16px}
+.dl-link{color:var(--orange);font-weight:600;text-decoration:none;font-size:13px;cursor:pointer}
+.dl-link:hover{text-decoration:underline}
+
+/* Learner Profile */
+.lp-header{display:flex;align-items:center;gap:20px;margin-bottom:32px;flex-wrap:wrap}
+.lp-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--white);flex-shrink:0}
+.lp-meta h2{font-size:22px;font-weight:700;color:var(--dark);margin-bottom:2px}
+.lp-meta .lp-status{display:inline-block;padding:3px 12px;border-radius:50px;font-size:12px;font-weight:600;margin-right:8px}
+.lp-meta .lp-phone{font-size:13px;color:var(--gray)}
+.lp-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.lp-tag{padding:4px 12px;border-radius:50px;background:var(--orange-light);color:var(--orange);font-size:12px;font-weight:600}
+.lp-actions{margin-left:auto;display:flex;gap:10px}
+.lp-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:32px}
+.lp-metric{background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border-top:3px solid var(--orange);transition:transform .25s ease,box-shadow .25s ease}
+.lp-metric:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.lp-metric .label{font-size:13px;color:var(--gray);margin-bottom:8px}
+.lp-metric .value{font-size:28px;font-weight:800;color:var(--dark)}
+.lp-metric .trend{font-size:12px;font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px}
+.lp-metric .trend.up{color:var(--green)}
+.lp-metric .trend.down{color:var(--red)}
+.lp-time-toggle{display:inline-flex;gap:4px;background:var(--light);border-radius:50px;padding:3px;margin-bottom:8px}
+.lp-time-toggle button{padding:6px 14px;border-radius:50px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;background:transparent;color:var(--gray);transition:all .2s}
+.lp-time-toggle button.active{background:var(--orange);color:var(--white)}
+.daily-table{background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+.daily-table h3{font-size:16px;font-weight:700;color:var(--dark);margin-bottom:16px}
+
+/* Modal Overlay */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+@keyframes modalIn{from{transform:scale(0.92) translateY(12px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.modal-box{background:var(--white);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow-lg);max-width:480px;width:90%;position:relative}
+.modal-overlay.show .modal-box{animation:modalIn .3s cubic-bezier(0.34,1.56,0.64,1) both}
+.modal-box h3{font-size:20px;font-weight:700;color:var(--dark);margin-bottom:16px}
+.modal-box .close-modal{position:absolute;top:16px;right:16px;background:none;border:none;font-size:18px;color:var(--gray);cursor:pointer;padding:4px}
+.modal-box .close-modal:hover{color:var(--dark)}
+.modal-actions{display:flex;gap:12px;margin-top:24px}
+
+/* Responsive */
+@media(max-width:1024px){
+  .signup-page.active{grid-template-columns:1fr!important}
+  .signup-left{display:none!important}
+  .hero{grid-template-columns:1fr;text-align:center}
+  .hero-visual{display:none}
+  .feat-grid{grid-template-columns:1fr 1fr}
+  .metric-cards{grid-template-columns:1fr 1fr}
+  .payment-grid{grid-template-columns:1fr}
+  .learner-layout{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .feat-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .dash-sidebar{display:none}
+  .dash-main{margin-left:0}
+  .metric-cards{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .billing-grid{grid-template-columns:1fr}
+  .nav-links{display:none}
+}
+/* Simulator Prompt */
+#simPrompt{display:none;margin-top:24px;padding:20px;background:linear-gradient(135deg,#fff5eb,#fff);border:2px solid var(--orange);border-radius:16px;text-align:center;animation:simPulse 2s ease-in-out infinite}
+#simPrompt h4{margin:0 0 8px;color:var(--text)}
+#simPrompt p{margin:0 0 16px;color:#666;font-size:14px}
+#simPrompt .sim-launch-btn{background:linear-gradient(135deg,var(--orange),#e8540a);color:#fff;border:none;padding:14px 32px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .2s,box-shadow .2s}
+#simPrompt .sim-launch-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,107,0,.35)}
+@keyframes simPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,0,.15)}50%{box-shadow:0 0 0 12px rgba(255,107,0,0)}}
+/* Simulator Narration Panel */
+.sim-narration{display:none}
+.sim-narration.active{display:block}
+.sim-progress{display:flex;align-items:center;gap:4px;margin-bottom:20px;flex-wrap:wrap}
+.sim-dot{width:28px;height:28px;border-radius:50%;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#999;transition:all .3s}
+.sim-dot.done{background:var(--orange);color:#fff}
+.sim-dot.current{background:#fff;border:2.5px solid var(--orange);color:var(--orange);animation:dotPulse 1.5s infinite}
+.sim-line{width:12px;height:2px;background:#ddd;border-radius:2px}
+.sim-line.done{background:var(--orange)}
+@keyframes dotPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.sim-narr-text{background:#f8f9fa;border-radius:12px;padding:16px;margin-top:12px}
+.sim-narr-text h4{margin:0 0 6px;font-size:15px;color:var(--text)}
+.sim-narr-text p{margin:0;font-size:13px;color:#666;line-height:1.5}
+/* Email Inbox */
+.sim-inbox{padding:0}
+.sim-inbox-header{background:linear-gradient(135deg,#4285f4,#34a853);color:#fff;padding:14px 16px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+.sim-email-row{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-bottom:1px solid #eee;cursor:pointer;transition:background .2s}
+.sim-email-row:hover{background:#f0f6ff}
+.sim-email-row.unread{background:#e8f0fe;font-weight:600}
+.sim-email-row .email-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);margin-top:6px;flex-shrink:0}
+.sim-email-row .email-from{font-size:13px;color:var(--text)}
+.sim-email-row .email-subj{font-size:12px;color:#444;margin-top:2px}
+.sim-email-row .email-time{font-size:11px;color:#999;margin-top:2px}
+/* Full Invite Email */
+.sim-invite{padding:16px}
+.sim-invite .invite-logo{text-align:center;margin-bottom:12px;font-size:22px;font-weight:800;color:var(--orange)}
+.sim-invite .invite-card{background:#fff5eb;border-radius:12px;padding:16px;margin-bottom:14px}
+.sim-invite .invite-card h4{margin:0 0 8px;font-size:14px}
+.sim-invite .invite-card p{margin:0;font-size:12px;color:#555;line-height:1.5}
+.sim-invite .invite-dl-btn{display:block;width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:center}
+/* App Store */
+.sim-store{padding:16px}
+.sim-store-card{background:#fff;border-radius:14px;border:1px solid #eee;padding:16px;text-align:center}
+.sim-store-card .store-icon{width:64px;height:64px;background:var(--orange);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:28px;color:#fff}
+.sim-store-card h4{margin:4px 0;font-size:16px}
+.sim-store-card .store-meta{font-size:11px;color:#888;margin-bottom:10px}
+.sim-store-card .store-stars{color:#ffc107;font-size:13px;margin-bottom:8px}
+.sim-store-install{display:block;width:100%;padding:12px;background:#34a853;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px}
+.sim-store-install.opening{background:var(--orange)}
+.sim-progress-bar{height:6px;background:#e0e0e0;border-radius:3px;margin-top:12px;overflow:hidden}
+.sim-progress-bar .fill{height:100%;background:var(--orange);border-radius:3px;width:0;transition:width 1.5s ease}
+/* Sim Login */
+.sim-login{padding:24px 16px;text-align:center}
+.sim-login .sim-app-logo{font-size:28px;font-weight:800;color:var(--orange);margin-bottom:4px}
+.sim-login .sim-app-tag{font-size:11px;color:#888;margin-bottom:20px}
+.sim-login input{width:100%;padding:12px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;margin-bottom:12px;box-sizing:border-box}
+.sim-login input:focus{border-color:var(--orange);outline:none}
+.sim-login .sim-login-btn{width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+/* Sim OTP */
+.sim-otp{padding:24px 16px;text-align:center}
+.sim-otp p{font-size:12px;color:#666;margin:0 0 16px}
+.sim-otp-inputs{display:flex;gap:8px;justify-content:center;margin-bottom:16px}
+.sim-otp-inputs input{width:40px;height:48px;text-align:center;font-size:20px;font-weight:700;border:2px solid #ddd;border-radius:10px;outline:none}
+.sim-otp-inputs input:focus{border-color:var(--orange)}
+.sim-otp-inputs input.filled{border-color:var(--orange);background:#fff5eb}
+.sim-otp .sim-otp-hint{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:4px 12px;border-radius:8px;font-size:11px;margin-bottom:14px}
+.sim-otp .sim-verify-btn{width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+/* Assessment */
+.sim-assess{padding:14px}
+.sim-assess .assess-header{text-align:center;margin-bottom:14px}
+.sim-assess .assess-header h4{margin:0 0 4px;font-size:14px;color:var(--text)}
+.sim-assess .assess-header p{margin:0;font-size:11px;color:#888}
+.sim-assess .assess-progress{height:5px;background:#eee;border-radius:3px;margin-bottom:16px;overflow:hidden}
+.sim-assess .assess-progress .fill{height:100%;background:var(--orange);border-radius:3px;transition:width .4s}
+.sim-assess .assess-q{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;line-height:1.4}
+.sim-assess .assess-opt{display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:8px;border:1.5px solid #e0e0e0;border-radius:10px;background:#fff;font-size:13px;cursor:pointer;transition:all .2s;color:var(--text)}
+.sim-assess .assess-opt:hover{border-color:var(--orange);background:#fff8f0}
+.sim-assess .assess-opt.correct{border-color:#4caf50;background:#e8f5e9;color:#2e7d32;font-weight:600}
+.sim-assess .assess-opt.wrong{border-color:#f44336;background:#ffebee;color:#c62828}
+/* Level Result */
+.sim-level{padding:20px 16px;text-align:center}
+.sim-level .level-badge{display:inline-block;width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#e8540a);color:#fff;font-size:28px;font-weight:800;line-height:80px;margin-bottom:12px}
+.sim-level h4{margin:0 0 4px;font-size:16px}
+.sim-level p{font-size:12px;color:#666;margin:0 0 16px;line-height:1.5}
+.sim-level .level-course{background:#f8f9fa;border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;text-align:left}
+.sim-level .level-course i{color:var(--orange);font-size:18px}
+.sim-level .level-course span{font-size:13px;font-weight:600}
+.sim-level .sim-start-btn{width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:12px}
+/* Exercise Screen */
+.sim-ex{padding:14px}
+.sim-ex .ex-badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase;margin-bottom:8px}
+.sim-ex .ex-badge.vocab{background:#e3f2fd;color:#1565c0}
+.sim-ex .ex-badge.quiz{background:#fff3e0;color:#e65100}
+.sim-ex .ex-badge.speak{background:#e8f5e9;color:#2e7d32}
+.sim-ex .ex-badge.ai{background:#f3e5f5;color:#7b1fa2}
+.sim-ex .ex-q{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;line-height:1.4}
+.sim-ex .ex-opt{display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:8px;border:1.5px solid #e0e0e0;border-radius:10px;background:#fff;font-size:13px;cursor:pointer;transition:all .2s;color:var(--text)}
+.sim-ex .ex-opt:hover{border-color:var(--orange);background:#fff8f0}
+.sim-ex .ex-opt.correct{border-color:#4caf50;background:#e8f5e9;color:#2e7d32;font-weight:600}
+.sim-ex .ex-opt.wrong{border-color:#f44336;background:#ffebee;color:#c62828}
+/* Speaking Exercise */
+.sim-mic-area{text-align:center;padding:20px 0}
+.sim-mic-btn{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#e8540a);color:#fff;border:none;font-size:28px;cursor:pointer;transition:transform .2s;position:relative}
+.sim-mic-btn:hover{transform:scale(1.08)}
+.sim-mic-btn.recording{animation:micPulse 1s infinite}
+@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,0,.4)}50%{box-shadow:0 0 0 16px rgba(255,107,0,0)}}
+.sim-wave{display:flex;align-items:center;justify-content:center;gap:3px;height:40px;margin:12px 0}
+.sim-wave span{width:4px;background:var(--orange);border-radius:2px;animation:simWave .8s ease-in-out infinite}
+.sim-wave span:nth-child(1){height:12px;animation-delay:0s}
+.sim-wave span:nth-child(2){height:24px;animation-delay:.1s}
+.sim-wave span:nth-child(3){height:32px;animation-delay:.2s}
+.sim-wave span:nth-child(4){height:20px;animation-delay:.3s}
+.sim-wave span:nth-child(5){height:28px;animation-delay:.4s}
+@keyframes simWave{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.4)}}
+.sim-score-card{background:linear-gradient(135deg,#e8f5e9,#fff);border:1.5px solid #4caf50;border-radius:12px;padding:14px;text-align:center;margin-top:12px}
+.sim-score-card .score-num{font-size:32px;font-weight:800;color:#2e7d32}
+.sim-score-card .score-label{font-size:11px;color:#666}
+/* AI Chat Exercise */
+.sim-chat-area{display:flex;flex-direction:column;height:100%}
+.sim-chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.sim-chat-msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:12px;line-height:1.4}
+.sim-chat-msg.ai{background:#f0f0f0;color:var(--text);align-self:flex-start;border-bottom-left-radius:4px}
+.sim-chat-msg.user{background:var(--orange);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.sim-chat-input{display:flex;gap:6px;padding:10px;border-top:1px solid #eee}
+.sim-chat-input input{flex:1;padding:10px;border:1.5px solid #ddd;border-radius:20px;font-size:12px;outline:none}
+.sim-chat-input input:focus{border-color:var(--orange)}
+.sim-chat-input button{width:36px;height:36px;border-radius:50%;background:var(--orange);color:#fff;border:none;font-size:14px;cursor:pointer}
+/* Completion Screen */
+.sim-complete{padding:20px 16px;text-align:center}
+.sim-complete .coin-icon{font-size:48px;margin-bottom:8px;animation:coinBounce .6s ease}
+@keyframes coinBounce{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+.sim-complete h4{margin:0 0 4px;font-size:18px}
+.sim-complete p{font-size:12px;color:#666;margin:0 0 14px}
+.sim-complete .score-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:12px}
+.sim-complete .score-row .lbl{color:#888}
+.sim-complete .score-row .val{font-weight:700;color:var(--text)}
+.sim-complete .sim-dashboard-btn{width:100%;padding:12px;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:16px}
+.sim-complete .sim-reset-btn{width:100%;padding:10px;background:transparent;color:var(--orange);border:1.5px solid var(--orange);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div id="toast"></div>
+<!-- Loading -->
+<div id="loading"><div class="spinner"></div><div id="loadingText">Loading...</div></div>
+
+<!-- ==================== PAGE 1: LANDING ==================== -->
+<div class="page active" id="pageLanding">
+<nav class="navbar"><div class="nav-inner">
+  <a class="nav-logo" href="#">Speak<span>X</span> Business</a>
+  <div class="nav-links">
+    <a href="#" onclick="document.getElementById('feat-section').scrollIntoView({behavior:'smooth'});return false">Features</a>
+    <a href="#" onclick="document.getElementById('pricing-section').scrollIntoView({behavior:'smooth'});return false">Pricing</a>
+    <a href="#" onclick="nav('pageLogin');return false">Sign In</a>
+  </div>
+  <div class="nav-cta">
+    <button class="btn btn-primary btn-sm" onclick="nav('pageSignup')"><i class="fas fa-rocket"></i> Start Free Trial</button>
+  </div>
+</div></nav>
+
+<div class="hero">
+  <div>
+    <h1>Train Your Workforce with <span>AI-Powered Learning</span></h1>
+    <p class="hero-sub">SpeakX helps organisations build confident English communicators with AI-powered spoken English practice — delivering measurable results in weeks, not months.</p>
+    <div class="hero-ctas">
+      <button class="btn btn-primary btn-lg" onclick="nav('pageSignup')"><i class="fas fa-rocket"></i> Start 7-Day Free Trial</button>
+      <a href="#" class="btn btn-outline btn-lg" onclick="document.getElementById('feat-section').scrollIntoView({behavior:'smooth'});return false">See How It Works</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="phone-mock">
+      <div class="phone-notch"></div>
+      <div class="phone-inner">
+        <div class="sx-icon">SX</div>
+        <h3>Meet SIA</h3>
+        <p>Your personal AI English Teacher<br>Available 24/7</p>
+      </div>
+    </div>
+    <div class="float-card"><i class="fas fa-chart-line"></i> 95% Completion Rate</div>
+    <div class="float-card"><i class="fas fa-bolt"></i> 3x Faster Learning</div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stats-grid">
+    <div><div class="stat-num" data-target="500">0</div><div class="stat-label">Enterprise Clients</div></div>
+    <div><div class="stat-num" data-target="200000">0</div><div class="stat-label">Active Learners</div></div>
+    <div><div class="stat-num" data-target="95">0</div><div class="stat-label">Completion Rate %</div></div>
+    <div><div class="stat-num" data-target="4.8">0</div><div class="stat-label">App Rating / 5</div></div>
+  </div>
+</div>
+
+<div class="features" id="feat-section">
+  <div class="section-header"><h2>Everything You Need to Upskill</h2><p>Powerful tools for organisations to train their workforce in spoken English communication.</p></div>
+  <div class="feat-grid">
+    <div class="feat-card"><div class="feat-icon"><i class="fas fa-wand-magic-sparkles"></i></div><h3>AI Course Creator</h3><p>Upload SOPs, chat with AI, get a fully structured course in minutes.</p></div>
+    <div class="feat-card"><div class="feat-icon"><i class="fas fa-chart-line"></i></div><h3>Admin Dashboard</h3><p>Track progress with real-time metrics, engagement data, and downloadable reports.</p></div>
+    <div class="feat-card"><div class="feat-icon"><i class="fas fa-microphone"></i></div><h3>AI Conversation Practice</h3><p>Learners practice with SIA, our AI tutor available 24/7, judgment-free.</p></div>
+    <div class="feat-card"><div class="feat-icon"><i class="fas fa-users"></i></div><h3>Bulk User Management</h3><p>Add single users or hundreds at once from an Excel paste.</p></div>
+    <div class="feat-card"><div class="feat-icon"><i class="fas fa-language"></i></div><h3>Multilingual Support</h3><p>English, Hindi, regional languages plus CEFR-aligned assessment.</p></div>
+    <div class="feat-card"><div class="feat-icon"><i class="fas fa-shield-halved"></i></div><h3>Enterprise Security</h3><p>SOC 2 compliant, encrypted data, isolated infrastructure.</p></div>
+  </div>
+</div>
+
+<div class="pricing" id="pricing-section">
+  <div class="section-header"><h2>Simple, Transparent Pricing</h2><p>Start with a 7-day free trial. Scale as your team grows.</p></div>
+  <div class="pricing-box">
+    <div class="toggle-wrap">
+      <button class="toggle-btn active" onclick="setMode('annual',this)">Annual</button>
+      <button class="toggle-btn" onclick="setMode('monthly',this)">Monthly</button>
+    </div>
+    <div id="mrpLine" class="mrp-line">MRP <span class="strike">₹299</span>/learner/month</div>
+    <div id="discountBadge" class="discount-badge">33% off</div>
+    <div class="slider-display"><div class="slider-num" id="sliderNum">50</div><div class="slider-sub">Learners</div></div>
+    <input type="range" min="5" max="500" value="50" id="pricingSlider" oninput="updatePricing()">
+    <div class="slider-range"><span>5</span><span>500</span></div>
+    <div class="price-breakdown" id="priceBreakdown"></div>
+    <div class="pricing-cta"><button class="btn btn-primary btn-block btn-lg" onclick="nav('pageSignup')"><i class="fas fa-rocket"></i> Start 7-Day Free Trial</button></div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== PAGE 2: SIGNUP ==================== -->
+<div class="page signup-page" id="pageSignup">
+<div class="signup-left">
+  <h2>Join 500+ Companies<br>Training Smarter</h2>
+  <ul class="benefit-list">
+    <li><i class="fas fa-check-circle"></i> 7-day free trial — full access</li>
+    <li><i class="fas fa-check-circle"></i> AI-powered course creation</li>
+    <li><i class="fas fa-check-circle"></i> Real-time admin dashboard</li>
+    <li><i class="fas fa-check-circle"></i> 24/7 AI conversation practice</li>
+    <li><i class="fas fa-check-circle"></i> Bulk user upload from Excel</li>
+    <li><i class="fas fa-check-circle"></i> Cancel anytime — no lock-in</li>
+  </ul>
+</div>
+<div class="signup-right">
+  <div class="signup-form">
+    <a href="#" class="back-link" onclick="nav('pageLanding');return false"><i class="fas fa-arrow-left"></i> Back to website</a>
+    <h2>Create Your Account</h2>
+    <p class="subtitle">Start your 7-day free trial. No credit card required.</p>
+    <div class="form-group"><label>Full Name</label><input type="text" id="sName" placeholder="Enter your full name"><div class="err-msg">Name must be 2+ characters, only letters, spaces and dots.</div></div>
+    <div class="form-group"><label>Organisation Name</label><input type="text" id="sOrg" placeholder="Your company name"><div class="err-msg">Please enter organisation name.</div></div>
+    <div class="form-group"><label>Work Email</label><input type="email" id="sEmail" placeholder="you@company.com"><div class="err-msg">Please enter a valid email address.</div></div>
+    <div class="form-group"><label>Phone Number</label><div class="phone-input"><select><option>+91</option></select><input type="tel" id="sPhone" placeholder="10-digit number" maxlength="10"></div><div class="err-msg">Phone must be 10 digits starting with 6, 7, 8 or 9.</div></div>
+    <button class="btn btn-primary btn-block btn-lg" onclick="submitSignup()" style="margin-top:8px"><i class="fas fa-paper-plane"></i> Send Verification OTP</button>
+    <p class="switch-link">Already a member? <a onclick="nav('pageLogin')">Sign In here</a></p>
+  </div>
+</div>
+</div>
+
+<!-- ==================== PAGE 2B: LOGIN ==================== -->
+<div class="page otp-page" id="pageLogin">
+<div class="otp-card" style="max-width:440px">
+  <a href="#" class="back-link" onclick="nav('pageLanding');return false" style="text-align:left;display:block;margin-bottom:16px"><i class="fas fa-arrow-left"></i> Back to website</a>
+  <div class="otp-icon"><i class="fas fa-right-to-bracket"></i></div>
+  <h2>Sign In</h2>
+  <p class="subtitle">Welcome back! Enter your details to access your dashboard.</p>
+  <div style="display:flex;gap:4px;background:var(--light);border-radius:50px;padding:4px;margin-bottom:24px">
+    <button class="toggle-btn active" id="loginTogglePhone" onclick="toggleLoginMode('phone')" style="flex:1;padding:10px;border-radius:50px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s">Phone</button>
+    <button class="toggle-btn" id="loginToggleEmail" onclick="toggleLoginMode('email')" style="flex:1;padding:10px;border-radius:50px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s">Email</button>
+  </div>
+  <div id="loginPhoneField" class="form-group"><label>Phone Number</label><div class="phone-input"><select><option>+91</option></select><input type="tel" id="liPhone" placeholder="10-digit number" maxlength="10"></div><div class="err-msg">Phone must be 10 digits starting with 6, 7, 8 or 9.</div></div>
+  <div id="loginEmailField" class="form-group" style="display:none"><label>Work Email</label><input type="email" id="liEmail" placeholder="you@company.com"><div class="err-msg">Please enter a valid email address.</div></div>
+  <button class="btn btn-primary btn-block btn-lg" onclick="submitLogin()" style="margin-top:8px"><i class="fas fa-paper-plane"></i> Send Verification Code</button>
+  <p class="switch-link" style="margin-top:20px">Don't have an account? <a onclick="nav('pageSignup')">Sign up here</a></p>
+</div>
+</div>
+
+<!-- ==================== PAGE 3: OTP ==================== -->
+<div class="page otp-page" id="pageOtp">
+<div class="otp-card">
+  <div class="otp-icon"><i class="fas fa-shield-halved"></i></div>
+  <h2>Verify Your Identity</h2>
+  <p class="subtitle" id="otpSubtitle">Enter the OTP sent to your email and phone</p>
+  <div class="otp-section"><label><i class="fas fa-envelope"></i> Email OTP</label><div class="otp-hint" id="emailHint"></div><div class="otp-inputs" id="emailOtpInputs"></div></div>
+  <div class="otp-section"><label><i class="fas fa-mobile-screen"></i> Phone OTP</label><div class="otp-hint" id="phoneHint"></div><div class="otp-inputs" id="phoneOtpInputs"></div></div>
+  <div class="otp-error" id="otpError"></div>
+  <button class="btn btn-primary btn-block" onclick="verifyOtp()" style="margin-top:20px"><i class="fas fa-check-circle"></i> Verify & Continue</button>
+  <div class="otp-timer" id="otpTimer"></div>
+  <p class="switch-link" style="margin-top:16px"><a onclick="nav('pageSignup')"><i class="fas fa-arrow-left"></i> Back to Signup</a></p>
+</div>
+</div>
+
+<!-- ==================== PAGE 4: PAYMENT ==================== -->
+<div class="page payment-page" id="pagePayment">
+<div class="payment-grid">
+  <div class="pay-summary">
+    <h3><i class="fas fa-receipt" style="color:var(--orange);margin-right:8px"></i>Order Summary</h3>
+    <div id="orderSummary"></div>
+    <div class="trial-badge"><i class="fas fa-gift"></i> 7-day free trial included! You won't be charged today.</div>
+  </div>
+  <div class="pay-form">
+    <h3>Payment Method</h3>
+    <p class="powered"><i class="fas fa-lock" style="margin-right:4px"></i> Powered by Razorpay</p>
+    <div class="pay-tabs">
+      <button class="pay-tab active" onclick="switchPayTab('Card',this)"><i class="fas fa-credit-card"></i>Card</button>
+      <button class="pay-tab" onclick="switchPayTab('Upi',this)"><i class="fas fa-mobile-screen"></i>UPI</button>
+      <button class="pay-tab" onclick="switchPayTab('Nb',this)"><i class="fas fa-building-columns"></i>Net Banking</button>
+    </div>
+    <div class="pay-method active" id="payCard">
+      <div class="form-group"><label>Card Number</label><input type="text" id="cardNum" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label>Expiry</label><input type="text" id="cardExp" placeholder="MM/YY" maxlength="5" oninput="fmtExp(this)"></div>
+        <div class="form-group"><label>CVV</label><input type="password" id="cardCvv" placeholder="•••" maxlength="3"></div>
+      </div>
+      <div class="form-group"><label>Name on Card</label><input type="text" id="cardName" placeholder="Name as on card"></div>
+    </div>
+    <div class="pay-method" id="payUpi">
+      <div class="form-group"><label>UPI ID</label><input type="text" id="upiId" placeholder="yourname@upi"></div>
+    </div>
+    <div class="pay-method" id="payNb">
+      <div class="form-group"><label>Select Bank</label><select id="nbBank" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit"><option value="">Choose your bank</option><option>State Bank of India</option><option>HDFC Bank</option><option>ICICI Bank</option><option>Axis Bank</option><option>Kotak Mahindra Bank</option></select></div>
+    </div>
+    <button class="btn btn-primary btn-block btn-lg" onclick="processPayment()"><i class="fas fa-lock"></i> Setup Autopay & Start Trial</button>
+    <div class="secure-badge"><i class="fas fa-shield-halved"></i> 256-bit SSL Encrypted. Your data is safe.</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== PAGE 5: DASHBOARD ==================== -->
+<div class="page dashboard-page" id="pageDashboard">
+<div class="dash-sidebar">
+  <div class="logo">Speak<span>X</span></div>
+  <div class="sidebar-section">Main Menu</div>
+  <a class="sidebar-item active" data-sec="secOverview" onclick="showSec(this)"><i class="fas fa-chart-pie"></i> Overview</a>
+  <a class="sidebar-item" data-sec="secUsers" onclick="showSec(this)"><i class="fas fa-user-plus"></i> New User</a>
+  <a class="sidebar-item" data-sec="secCourses" onclick="showSec(this)"><i class="fas fa-plus-circle"></i> Create Course</a>
+  <a class="sidebar-item" data-sec="secAssign" onclick="showSec(this)"><i class="fas fa-paper-plane"></i> Assign Course</a>
+  <a class="sidebar-item" data-sec="secLearnerApp" onclick="showSec(this)"><i class="fas fa-mobile-screen"></i> Learner App</a>
+  <div class="sidebar-section">Resources</div>
+  <a class="sidebar-item" data-sec="secFaq" onclick="showSec(this)"><i class="fas fa-circle-question"></i> FAQ's</a>
+  <a class="sidebar-item" data-sec="secAbout" onclick="showSec(this)"><i class="fas fa-building"></i> About Us</a>
+  <a class="sidebar-item" data-sec="secContact" onclick="showSec(this)"><i class="fas fa-headset"></i> Contact Us</a>
+  <a class="sidebar-item" onclick="window.open('https://knowledge.speakx.in','_blank')"><i class="fas fa-book-open"></i> Knowledge Bank</a>
+  <div class="sidebar-section">More</div>
+  <a class="sidebar-item" data-sec="secSettings" onclick="showSec(this)"><i class="fas fa-gear"></i> Settings</a>
+  <a class="sidebar-item" data-sec="secBilling" onclick="showSec(this)"><i class="fas fa-file-invoice"></i> Plan & Billing</a>
+  <a class="sidebar-item" onclick="doLogout()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+  <div class="sidebar-user">
+    <div class="sidebar-avatar" id="sidebarAvatar">HS</div>
+    <div class="sidebar-user-info"><div class="name" id="sidebarName">Admin</div><div class="role">Admin</div></div>
+  </div>
+</div>
+<div class="dash-main">
+  <div class="dash-topbar">
+    <h1 id="dashTitle">Overview</h1>
+    <div class="topbar-actions">
+      <div id="seatCount" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--light);border-radius:50px;font-size:13px;font-weight:600;color:var(--dark);margin-right:4px"><i class="fas fa-users" style="color:var(--orange)"></i><span id="seatText">10/50 Seats</span></div>
+      <div class="notif-wrapper">
+        <button class="notif-bell" onclick="toggleNotifDropdown()"><i class="fas fa-bell"></i><span class="notif-dot" id="notifDot"></span></button>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-header"><h4>Notifications</h4><span class="notif-count" id="notifBadge">0</span></div>
+          <div class="notif-list" id="notifList"></div>
+          <div class="notif-footer"><a href="#" onclick="markAllNotifRead();return false">Mark all as read</a></div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="switchTab('tabAdd',document.querySelectorAll('.tab-btn')[1]);showSec(document.querySelector('[data-sec=secUsers]'))"><i class="fas fa-user-plus"></i> New User</button>
+      <button class="btn btn-primary btn-sm" onclick="showSec(document.querySelector('[data-sec=secCourses]'))"><i class="fas fa-plus"></i> Create Course</button>
+    </div>
+  </div>
+  <div class="dash-content">
+    <div class="dash-section active" id="secOverview">
+      <!-- Where to Focus -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px" id="focusCards"></div>
+      <div class="metric-cards" id="metricCards"></div>
+      <!-- Top 3 Users -->
+      <div style="background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:24px" id="top3Card"></div>
+      <div class="chart-card"><h3>Weekly Active Learners</h3><div class="chart-bars" id="chartBars"></div><div id="dayLearnerList" style="display:none;margin-top:20px;border-top:1px solid var(--border);padding-top:16px"></div></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:16px"><button class="btn btn-outline btn-sm" onclick="downloadReport('csv')"><i class="fas fa-file-csv"></i> Download CSV</button><button class="btn btn-primary btn-sm" onclick="downloadReport('xlsx')"><i class="fas fa-file-excel"></i> Download Excel</button></div>
+      <div class="performers-table"><h3>Top Performers</h3><table><thead><tr><th>Learner</th><th>Exercises Done</th><th>Active Time</th><th>Score</th></tr></thead><tbody id="perfBody"></tbody></table></div>
+    </div>
+    <div class="dash-section" id="secUsers">
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('tabAll',this)">All Users</button>
+        <button class="tab-btn" onclick="switchTab('tabAdd',this)">Add Single User</button>
+        <button class="tab-btn" onclick="switchTab('tabBulk',this)">Bulk Import</button>
+      </div>
+      <div class="tab-content active" id="tabAll">
+        <div class="filter-bar">
+          <input type="text" id="userSearch" placeholder="Search by name, email, phone..." oninput="renderUsers()">
+          <select id="userFilter" onchange="renderUsers()"><option value="">All Statuses</option><option value="active">Active</option><option value="started">Exercise Started</option><option value="not_started">Not Yet Started</option><option value="inactive">Inactive</option><option value="invited">Invite Sent</option></select>
+          <button class="btn btn-primary btn-sm" onclick="switchTab('tabBulk',document.querySelectorAll('.tab-btn')[2])"><i class="fas fa-file-import"></i> Bulk Import</button>
+          <button class="btn btn-outline btn-sm" onclick="switchTab('tabAdd',document.querySelectorAll('.tab-btn')[1])"><i class="fas fa-plus"></i> Add User</button>
+        </div>
+        <div class="users-table"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Department</th><th>Status</th><th>Progress</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table></div>
+      </div>
+      <div class="tab-content" id="tabAdd">
+        <div class="add-user-form">
+          <h3 style="margin-bottom:20px;font-size:18px;font-weight:700;color:var(--dark)">Add New Learner</h3>
+          <div class="form-group"><label>Full Name</label><input type="text" id="auName" placeholder="Learner's full name"></div>
+          <div class="form-group"><label>Email</label><input type="email" id="auEmail" placeholder="learner@company.com"></div>
+          <div class="form-group"><label>Phone</label><input type="tel" id="auPhone" placeholder="10-digit number" maxlength="10"></div>
+          <div class="form-group"><label>Department</label><select id="auDept"><option value="">Select Department</option></select></div>
+          <button class="btn btn-primary" onclick="addSingleUser()"><i class="fas fa-user-plus"></i> Add Learner</button>
+        </div>
+      </div>
+      <div class="tab-content" id="tabBulk">
+        <div class="bulk-form">
+          <h3 style="margin-bottom:8px;font-size:18px;font-weight:700;color:var(--dark)">Bulk Import Learners</h3>
+          <!-- File Upload -->
+          <div id="bulkUploadZone" onclick="document.getElementById('bulkFileInput').click()" style="border:2px dashed var(--border);border-radius:var(--radius);padding:32px 24px;text-align:center;cursor:pointer;transition:all .2s ease;background:var(--white);margin-bottom:16px" onmouseover="this.style.borderColor='var(--orange)';this.style.background='var(--orange-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--white)'">
+            <i class="fas fa-cloud-upload-alt" style="font-size:28px;color:var(--orange);margin-bottom:8px;display:block"></i>
+            <p style="font-size:14px;font-weight:600;color:var(--dark);margin-bottom:4px">Upload CSV or Excel file</p>
+            <p style="font-size:12px;color:var(--gray)">Columns: Name, Email, Phone — one row per learner</p>
+            <input type="file" id="bulkFileInput" accept=".csv,.xls,.xlsx" style="display:none" onchange="handleBulkFile(this)">
+          </div>
+          <div id="bulkFileInfo" style="display:none;padding:12px 16px;background:var(--green-light,#e6f9e6);border-radius:8px;margin-bottom:16px;display:none;align-items:center;gap:10px">
+            <i class="fas fa-file-check" style="color:var(--green)"></i>
+            <span id="bulkFileName" style="font-size:13px;font-weight:600;color:var(--dark);flex:1"></span>
+            <button onclick="clearBulkFile()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px"><i class="fas fa-times"></i></button>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:12px;color:var(--gray);font-weight:600">OR paste directly</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
+          <p class="hint">Name, Email, Phone, Department (one row per learner, tab or comma separated)</p>
+          <textarea id="bulkData" placeholder="Priya Sharma, priya@acme.com, 9876543210, Sales&#10;Rahul Verma, rahul@acme.com, 9876543211, Operations"></textarea>
+          <button class="btn btn-primary" onclick="bulkImport()" style="margin-top:12px"><i class="fas fa-file-import"></i> Import Users</button>
+        </div>
+      </div>
+    </div>
+    <!-- Individual Learner Profile -->
+    <div class="dash-section" id="secLearnerProfile">
+      <div style="margin-bottom:16px"><a href="#" class="back-link" onclick="showSec(document.querySelector('[data-sec=secUsers]'));return false"><i class="fas fa-arrow-left"></i> Back to New User</a></div>
+      <div class="lp-header">
+        <div class="lp-avatar" id="lpAvatar" style="background:var(--orange)">PS</div>
+        <div class="lp-meta">
+          <h2 id="lpName">Learner Name</h2>
+          <div><span class="lp-status status-active" id="lpStatus">Active</span><span class="lp-phone" id="lpPhone">+91 9876543210</span></div>
+          <div class="lp-tags" id="lpCourses"></div>
+        </div>
+        <div class="lp-actions">
+          <button class="btn btn-outline btn-sm" onclick="sendReminderProfile()"><i class="fas fa-bell"></i> Send Reminder</button>
+          <button class="btn btn-primary btn-sm" onclick="downloadLearnerReport()"><i class="fas fa-download"></i> Download Report</button>
+        </div>
+      </div>
+      <div class="lp-metrics">
+        <div class="lp-metric"><div class="label">Sentences Learnt</div><div class="value" id="lpSentences">0</div><div class="trend up" id="lpSentTrend"><i class="fas fa-arrow-up"></i> +12%</div></div>
+        <div class="lp-metric"><div class="label">Confidence Meter</div><div class="value" id="lpConfidence">0%</div><div class="trend up" id="lpConfTrend"><i class="fas fa-arrow-up"></i> +8%</div></div>
+        <div class="lp-metric"><div class="label">Exercises Completed</div><div class="value" id="lpExercises">0</div><div class="trend up" id="lpExTrend"><i class="fas fa-arrow-up"></i> +5%</div></div>
+        <div class="lp-metric">
+          <div class="label">Time Spent</div>
+          <div class="lp-time-toggle"><button class="active" onclick="switchTimeView('all',this)">All</button><button onclick="switchTimeView('month',this)">Month</button><button onclick="switchTimeView('week',this)">Week</button></div>
+          <div class="value" id="lpTime">0</div>
+          <div class="trend up" id="lpTimeTrend"><i class="fas fa-arrow-up"></i> +10%</div>
+        </div>
+      </div>
+      <div class="daily-table">
+        <h3>Daily Performance (Last 7 Days)</h3>
+        <table><thead><tr><th>Date</th><th>Time Spent</th><th>Sentences</th><th>Exercises</th></tr></thead><tbody id="lpDailyBody"></tbody></table>
+      </div>
+    </div>
+    <div class="dash-section" id="secCourses">
+      <div class="steps-bar">
+        <div class="step-item"><div class="step-circle active" id="sc1">1</div><div class="step-label">Upload</div></div>
+        <div class="step-line" id="sl1"></div>
+        <div class="step-item"><div class="step-circle" id="sc2">2</div><div class="step-label">AI Discovery</div></div>
+        <div class="step-line" id="sl2"></div>
+        <div class="step-item"><div class="step-circle" id="sc3">3</div><div class="step-label">Course Preview</div></div>
+      </div>
+      <div class="course-step active" id="cStep1">
+        <div class="upload-zone" onclick="simulateUpload()"><i class="fas fa-cloud-arrow-up"></i><h3>Click to upload documents</h3><p>PDF, DOCX, PPTX — up to 25 MB</p></div>
+        <div class="file-list" id="fileList" style="display:none"></div>
+        <div style="text-align:center;margin-top:20px"><button class="btn btn-primary" id="continueStep2" style="display:none" onclick="goStep(2)">Continue to AI Discovery <i class="fas fa-arrow-right"></i></button></div>
+      </div>
+      <div class="course-step" id="cStep2">
+        <div class="chat-container">
+          <div class="chat-header"><div class="ai-dot"></div> SpeakX Course AI</div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input-bar" id="chatInputBar">
+            <input type="text" id="chatInput" placeholder="Type your answer..." onkeydown="if(event.key==='Enter')sendChat()">
+            <button class="btn btn-primary btn-sm" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="course-step" id="cStep3"></div>
+    </div>
+    <div class="dash-section" id="secAssign">
+      <div class="assign-form">
+        <h3><i class="fas fa-paper-plane" style="color:var(--orange);margin-right:8px"></i>Assign Course to Learners</h3>
+        <div class="form-group"><label>Select Course</label><select id="asCourse"><option value="">Choose a course...</option></select></div>
+        <div class="form-group"><label>Department</label><select id="asDept"><option value="">All Departments</option></select></div>
+        <div class="form-group"><label>Assign To</label><select id="asTo"><option value="all">All Learners</option><option value="new">New Users Only</option><option value="inactive">Inactive Users</option></select></div>
+        <div class="form-group"><label>Due Date (optional)</label><input type="date" id="asDue"></div>
+        <div class="checkbox-row"><input type="checkbox" id="asNotify" checked><label for="asNotify">Send notification to learners</label></div>
+        <button class="btn btn-primary" onclick="assignCourse()" style="margin-top:16px"><i class="fas fa-paper-plane"></i> Assign Course</button>
+        <div id="simPrompt">
+          <h4><i class="fas fa-mobile-alt" style="color:var(--orange);margin-right:6px"></i> Course Assigned Successfully!</h4>
+          <p>Want to see how your learner experiences this course? Launch the interactive simulator to watch the complete journey — from email invite to exercise completion.</p>
+          <button class="sim-launch-btn" onclick="startLearnerSim()"><i class="fas fa-play-circle"></i> Launch Learner Simulator</button>
+        </div>
+      </div>
+    </div>
+    <div class="dash-section" id="secLearnerApp">
+      <div class="learner-layout">
+        <div class="learner-phone"><div class="learner-screen">
+          <div class="ls-screen active" id="lsHome">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="ls-header">SpeakX</div>
+            <div class="ls-body">
+              <div class="lp-welcome"><h4>Welcome back, Learner!</h4><div class="lp-progress-bar"><div class="fill" style="width:65%"></div></div><div class="pct">65% Complete</div></div>
+              <div class="lp-course"><div class="lp-course-icon"><i class="fas fa-headset"></i></div><div class="lp-course-info"><strong>Customer Service</strong><span>65% complete</span></div></div>
+              <div class="lp-course"><div class="lp-course-icon"><i class="fas fa-box"></i></div><div class="lp-course-info"><strong>Product Knowledge</strong><span>Not started</span></div></div>
+              <div class="lp-course"><div class="lp-course-icon"><i class="fas fa-user-check"></i></div><div class="lp-course-info"><strong>Onboarding</strong><span>100% complete</span></div></div>
+            </div>
+            <div class="ls-nav"><div class="ls-nav-item active"><i class="fas fa-home"></i>Home</div><div class="ls-nav-item"><i class="fas fa-book"></i>Learn</div><div class="ls-nav-item"><i class="fas fa-microphone"></i>Practice</div><div class="ls-nav-item"><i class="fas fa-user"></i>Profile</div></div>
+          </div>
+          <div class="ls-screen" id="lsLesson">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="ls-header"><span class="back-arr" onclick="showLearnerScreen('lsHome')"><i class="fas fa-arrow-left"></i></span> Module 3</div>
+            <div class="ls-body"><div class="lesson-content"><h4>Handling Customer Queries</h4><p>Learn how to respond to common customer questions with clarity and confidence.</p><div class="key-phrase"><strong>Key Phrase:</strong> "I understand your concern, let me help you with that."</div><div class="speak-section"><p>Your Turn — Speak</p><div class="wave-bars"><span></span><span></span><span></span><span></span><span></span></div><button class="btn btn-primary btn-sm" onclick="showLearnerScreen('lsAI')">Practice with AI <i class="fas fa-arrow-right"></i></button></div></div></div>
+            <div class="ls-nav"><div class="ls-nav-item"><i class="fas fa-home"></i>Home</div><div class="ls-nav-item active"><i class="fas fa-book"></i>Learn</div><div class="ls-nav-item"><i class="fas fa-microphone"></i>Practice</div><div class="ls-nav-item"><i class="fas fa-user"></i>Profile</div></div>
+          </div>
+          <div class="ls-screen" id="lsAI">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="ls-header"><span class="back-arr" onclick="showLearnerScreen('lsLesson')"><i class="fas fa-arrow-left"></i></span> Practice with SIA</div>
+            <div class="ls-body" style="padding:12px"><div class="lp-chat">
+              <div class="lp-msg ai">Hi! I'm SIA, your AI English coach. Let's practice a customer service scenario.</div>
+              <div class="lp-msg user">Sure, I'm ready!</div>
+              <div class="lp-msg ai">A customer says: "I've been waiting 30 minutes for my order." How would you respond?</div>
+              <div class="lp-msg user">I'm sorry for the wait. Let me check the status of your order right away.</div>
+              <div class="lp-msg ai">Excellent response! Score: 92/100 — Clear, empathetic, and action-oriented.</div>
+            </div></div>
+            <div class="voice-bar"><button class="mic-btn"><i class="fas fa-microphone"></i></button><input type="text" placeholder="Type or speak..." readonly></div>
+            <div class="ls-nav"><div class="ls-nav-item"><i class="fas fa-home"></i>Home</div><div class="ls-nav-item"><i class="fas fa-book"></i>Learn</div><div class="ls-nav-item active"><i class="fas fa-microphone"></i>Practice</div><div class="ls-nav-item"><i class="fas fa-user"></i>Profile</div></div>
+          </div>
+          <!-- Simulator Screens -->
+          <div class="ls-screen" id="lsEmail">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="sim-inbox">
+              <div class="sim-inbox-header"><i class="fas fa-envelope"></i> Inbox</div>
+              <div id="simEmailList"></div>
+            </div>
+          </div>
+          <div class="ls-screen" id="lsInvite">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="ls-header"><span class="back-arr" onclick="showLearnerScreen('lsEmail')"><i class="fas fa-arrow-left"></i></span> Email</div>
+            <div class="ls-body sim-invite" id="simInviteBody"></div>
+          </div>
+          <div class="ls-screen" id="lsAppStore">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="ls-header" style="background:#f8f9fa;color:var(--text)"><i class="fab fa-google-play" style="color:#34a853;margin-right:6px"></i> Play Store</div>
+            <div class="ls-body sim-store" id="simStoreBody"></div>
+          </div>
+          <div class="ls-screen" id="lsLoginSim">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="ls-body sim-login">
+              <div class="sim-app-logo">SpeakX</div>
+              <div class="sim-app-tag">AI-Powered English Learning</div>
+              <p style="font-size:13px;color:#444;margin-bottom:16px">Enter your registered mobile number</p>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px"><span style="background:#f0f0f0;padding:12px 10px;border-radius:10px;font-size:14px;color:#444">+91</span><input type="tel" id="simPhone" placeholder="Phone number" maxlength="10" style="flex:1"></div>
+              <button class="sim-login-btn" onclick="submitSimLogin()"><i class="fas fa-arrow-right" style="margin-right:6px"></i> Continue</button>
+            </div>
+          </div>
+          <div class="ls-screen" id="lsOtpSim">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="ls-body sim-otp">
+              <h4 style="margin:0 0 4px;font-size:16px">Verify OTP</h4>
+              <p id="simOtpSubtitle">Enter the 4-digit code</p>
+              <div class="sim-otp-inputs" id="simOtpInputs"></div>
+              <div class="sim-otp-hint" id="simOtpHint"></div>
+              <button class="sim-verify-btn" onclick="verifySimOtp()"><i class="fas fa-check" style="margin-right:6px"></i> Verify</button>
+            </div>
+          </div>
+          <div class="ls-screen" id="lsAssessment">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="ls-body sim-assess" id="simAssessBody"></div>
+          </div>
+          <div class="ls-screen" id="lsLevel">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="ls-body sim-level" id="simLevelBody"></div>
+          </div>
+          <div class="ls-screen" id="lsExercise">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="ls-body" id="simExBody"></div>
+          </div>
+          <div class="ls-screen" id="lsComplete">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="ls-body sim-complete" id="simCompleteBody"></div>
+          </div>
+          <div class="ls-screen" id="lsProgress">
+            <div class="ls-status"><span>9:41</span><span><i class="fas fa-wifi" style="margin-right:6px"></i><i class="fas fa-battery-full"></i></span></div>
+            <div class="ls-header"><span class="back-arr" onclick="showLearnerScreen('lsHome')"><i class="fas fa-arrow-left"></i></span> My Progress</div>
+            <div class="ls-body" style="padding:14px">
+              <div style="text-align:center;margin-bottom:14px"><div style="display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#FF8B5C);color:#fff;font-size:22px;font-weight:800">65%</div><p style="font-size:13px;color:var(--gray);margin:8px 0 0">Overall Progress</p></div>
+              <div style="background:#f8f9fa;border-radius:10px;padding:12px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span style="font-weight:600;color:var(--dark)">Customer Service</span><span style="color:var(--orange);font-weight:700">65%</span></div><div style="height:5px;background:#e0e0e0;border-radius:3px"><div style="height:100%;width:65%;background:var(--orange);border-radius:3px"></div></div></div>
+              <div style="background:#f8f9fa;border-radius:10px;padding:12px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span style="font-weight:600;color:var(--dark)">Product Knowledge</span><span style="color:#999;font-weight:700">0%</span></div><div style="height:5px;background:#e0e0e0;border-radius:3px"><div style="height:100%;width:0%;background:var(--orange);border-radius:3px"></div></div></div>
+              <div style="background:#f8f9fa;border-radius:10px;padding:12px;margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span style="font-weight:600;color:var(--dark)">Onboarding</span><span style="color:var(--green);font-weight:700">100%</span></div><div style="height:5px;background:#e0e0e0;border-radius:3px"><div style="height:100%;width:100%;background:var(--green);border-radius:3px"></div></div></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div style="background:#fff5eb;border-radius:10px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--orange)">12</div><div style="font-size:10px;color:var(--gray)">Exercises Done</div></div>
+                <div style="background:#e8f5e9;border-radius:10px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--green)">88</div><div style="font-size:10px;color:var(--gray)">Avg. Score</div></div>
+                <div style="background:#e3f2fd;border-radius:10px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1565c0">5h</div><div style="font-size:10px;color:var(--gray)">Time Spent</div></div>
+                <div style="background:#fce4ec;border-radius:10px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#c62828">3</div><div style="font-size:10px;color:var(--gray)">Day Streak</div></div>
+              </div>
+            </div>
+            <div class="ls-nav"><div class="ls-nav-item"><i class="fas fa-home"></i>Home</div><div class="ls-nav-item"><i class="fas fa-book"></i>Learn</div><div class="ls-nav-item"><i class="fas fa-microphone"></i>Practice</div><div class="ls-nav-item active"><i class="fas fa-user"></i>Profile</div></div>
+          </div>
+        </div></div>
+        <div class="learner-info">
+          <div id="learnerInfoDefault">
+            <h3>The Learner Experience</h3>
+            <p>This is how your employees experience SpeakX on their phones. They get personalised courses, AI conversation practice, and real-time feedback — all in a simple, engaging mobile app.</p>
+            <div class="learner-nav-btns">
+              <button class="learner-nav-btn" onclick="showLearnerScreen('lsLoginSim')"><i class="fas fa-sign-in-alt"></i> Login Screen</button>
+              <button class="learner-nav-btn" onclick="showLearnerScreen('lsHome')"><i class="fas fa-home"></i> Home Screen</button>
+              <button class="learner-nav-btn" onclick="showLearnerScreen('lsLesson')"><i class="fas fa-book"></i> Lesson View</button>
+              <button class="learner-nav-btn" onclick="showLearnerScreen('lsAI')"><i class="fas fa-microphone"></i> AI Practice with SIA</button>
+              <button class="learner-nav-btn" onclick="showLearnerScreen('lsProgress')"><i class="fas fa-chart-line"></i> Progress Report</button>
+            </div>
+          </div>
+          <div class="sim-narration" id="simNarrationPanel">
+            <h3><i class="fas fa-rocket" style="color:var(--orange);margin-right:6px"></i> Learner Journey Simulator</h3>
+            <div class="sim-progress" id="simProgressDots"></div>
+            <div class="sim-narr-text" id="simNarration"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dash-section" id="secSettings">
+      <div class="settings-form">
+        <h3><i class="fas fa-gear" style="color:var(--orange);margin-right:8px"></i>Organisation Profile</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Organisation Name</label><input type="text" id="setOrg"></div>
+          <div class="form-group"><label>Organisation Type</label><select id="setType"><option>Company / Enterprise</option><option>School</option><option>College</option><option>NGO</option><option>Government</option><option>Consultancy</option></select></div>
+          <div class="form-group"><label>Industry</label><select><option>Technology</option><option>Healthcare</option><option>Finance</option><option>Retail</option><option>Education</option></select></div>
+          <div class="form-group"><label>Organisation Size</label><select><option>1-50</option><option>51-200</option><option>201-500</option><option>500+</option></select></div>
+          <div class="form-group"><label>Country</label><select><option>India</option></select></div>
+          <div class="form-group"><label>City</label><input type="text" id="setCity" value="Mumbai"></div>
+          <div class="form-group"><label>Contact Name</label><input type="text" id="setContact"></div>
+          <div class="form-group"><label>Contact Email</label><input type="email" id="setEmail"></div>
+        </div>
+        <div class="form-group" style="margin-top:16px"><label>Contact Phone</label><input type="tel" id="setPhone"></div>
+        <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:20px"><i class="fas fa-check"></i> Save Changes</button>
+      </div>
+    </div>
+    <div class="dash-section" id="secBilling">
+      <div class="billing-grid">
+        <div class="bill-card"><h3>Plan Details</h3>
+          <div class="bill-row"><span class="lbl">Current Plan</span><span class="val" id="billPlan">Annual — Pro</span></div>
+          <div class="bill-row"><span class="lbl">Start Date</span><span class="val" id="billStart"></span></div>
+          <div class="bill-row"><span class="lbl">Renewal Date</span><span class="val" id="billRenew"></span></div>
+          <div class="bill-row"><span class="lbl">Price per Learner</span><span class="val" id="billPrice"></span></div>
+          <button class="btn btn-sm" style="margin-top:12px;background:transparent;color:var(--red);border:1px solid var(--red)" onclick="openCancelSub()"><i class="fas fa-times-circle"></i> Cancel Subscription</button>
+        </div>
+        <div class="bill-card"><h3>Seats / Licences</h3>
+          <div class="bill-row"><span class="lbl">Total Seats</span><span class="val" id="billSeats"></span></div>
+          <div class="bill-row"><span class="lbl">Used</span><span class="val" id="billUsed"></span></div>
+          <div class="bill-row"><span class="lbl">Utilisation</span><span class="val" id="billUtil"></span></div>
+          <div class="utilisation-bar"><div class="fill" id="billUtilBar" style="width:0%"></div></div>
+          <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="openModifySeats()">Modify Seats</button>
+        </div>
+      </div>
+      <!-- Billing Information -->
+      <div style="background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);margin-bottom:24px">
+        <h3 style="font-size:16px;font-weight:700;color:var(--dark);margin-bottom:20px"><i class="fas fa-file-invoice" style="color:var(--orange);margin-right:8px"></i>Billing Information</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>GST Number (optional)</label><input type="text" id="billGst" placeholder="22AAAAA0000A1Z5"></div>
+          <div class="form-group"><label>Billing Name</label><input type="text" id="billName" placeholder="Company legal name"></div>
+          <div class="form-group"><label>Billing Email</label><input type="email" id="billEmail" placeholder="billing@company.com"></div>
+          <div class="form-group"><label>Billing Phone</label><input type="tel" id="billPhone" placeholder="10-digit number" maxlength="10"></div>
+        </div>
+        <div class="form-group" style="margin-top:8px"><label>Billing Address</label><textarea id="billAddress" style="width:100%;height:80px;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;resize:vertical;outline:none" placeholder="Full billing address..."></textarea></div>
+        <button class="btn btn-primary btn-sm" onclick="saveBillingInfo()" style="margin-top:12px"><i class="fas fa-check"></i> Save Billing Info</button>
+      </div>
+      <div class="invoices-card"><h3>Invoices</h3>
+        <table><thead><tr><th>Invoice #</th><th>Period</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody id="invoiceBody"></tbody></table>
+      </div>
+    </div>
+    <!-- Knowledge Bank -->
+    <div class="dash-section" id="secKnowledge">
+      <div class="section-header" style="text-align:left;margin-bottom:32px"><h2 style="font-size:24px">Knowledge Bank</h2><p>Resources, guides, and documentation to help you get the most from SpeakX.</p></div>
+      <div class="feat-grid" style="grid-template-columns:repeat(3,1fr);gap:20px">
+        <div class="feat-card" style="cursor:pointer" onclick="downloadFile('SpeakX_Admin_Guide.pdf','Admin Dashboard Guide')"><div class="feat-icon"><i class="fas fa-book"></i></div><h3>Admin Dashboard Guide</h3><p>Complete walkthrough of every dashboard feature, metric, and report.</p><span class="dl-link" style="margin-top:8px;display:inline-block"><i class="fas fa-download" style="margin-right:4px"></i> Download PDF</span></div>
+        <div class="feat-card" style="cursor:pointer" onclick="downloadFile('SpeakX_Course_Creation.pdf','Course Creation Handbook')"><div class="feat-icon"><i class="fas fa-wand-magic-sparkles"></i></div><h3>Course Creation Handbook</h3><p>Step-by-step guide to creating custom courses using the AI Course Creator.</p><span class="dl-link" style="margin-top:8px;display:inline-block"><i class="fas fa-download" style="margin-right:4px"></i> Download PDF</span></div>
+        <div class="feat-card" style="cursor:pointer" onclick="downloadFile('SpeakX_Learner_Onboarding.pdf','Learner Onboarding Kit')"><div class="feat-icon"><i class="fas fa-users"></i></div><h3>Learner Onboarding Kit</h3><p>Share with your learners — how to download the app, log in, and start learning.</p><span class="dl-link" style="margin-top:8px;display:inline-block"><i class="fas fa-download" style="margin-right:4px"></i> Download PDF</span></div>
+        <div class="feat-card" style="cursor:pointer" onclick="downloadFile('SpeakX_CEFR_Assessment.pdf','CEFR Assessment Framework')"><div class="feat-icon"><i class="fas fa-chart-bar"></i></div><h3>CEFR Assessment Framework</h3><p>Understand how SpeakX measures English proficiency from A1 to C2.</p><span class="dl-link" style="margin-top:8px;display:inline-block"><i class="fas fa-download" style="margin-right:4px"></i> Download PDF</span></div>
+        <div class="feat-card" style="cursor:pointer" onclick="downloadFile('SpeakX_ROI_Report_Template.xlsx','ROI Report Template')"><div class="feat-icon"><i class="fas fa-file-excel"></i></div><h3>ROI Report Template</h3><p>Pre-built spreadsheet to calculate and present training ROI to stakeholders.</p><span class="dl-link" style="margin-top:8px;display:inline-block"><i class="fas fa-download" style="margin-right:4px"></i> Download XLSX</span></div>
+        <div class="feat-card" style="cursor:pointer" onclick="downloadFile('SpeakX_API_Docs.pdf','API Documentation')"><div class="feat-icon"><i class="fas fa-code"></i></div><h3>API Documentation</h3><p>Integrate SpeakX data with your existing HRMS, LMS, or reporting tools.</p><span class="dl-link" style="margin-top:8px;display:inline-block"><i class="fas fa-download" style="margin-right:4px"></i> Download PDF</span></div>
+      </div>
+      <div style="margin-top:32px;background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)">
+        <h3 style="font-size:16px;font-weight:700;color:var(--dark);margin-bottom:16px"><i class="fas fa-video" style="color:var(--orange);margin-right:8px"></i>Video Tutorials</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+          <div style="padding:16px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'"><div style="background:var(--dark);border-radius:var(--radius-sm);height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px"><i class="fas fa-play-circle" style="font-size:36px;color:var(--orange)"></i></div><p style="font-size:13px;font-weight:600;color:var(--dark)">Getting Started in 5 Minutes</p><p style="font-size:12px;color:var(--gray);margin-top:2px">3:42</p></div>
+          <div style="padding:16px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'"><div style="background:var(--dark);border-radius:var(--radius-sm);height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px"><i class="fas fa-play-circle" style="font-size:36px;color:var(--orange)"></i></div><p style="font-size:13px;font-weight:600;color:var(--dark)">Creating Your First Course</p><p style="font-size:12px;color:var(--gray);margin-top:2px">5:18</p></div>
+          <div style="padding:16px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'"><div style="background:var(--dark);border-radius:var(--radius-sm);height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px"><i class="fas fa-play-circle" style="font-size:36px;color:var(--orange)"></i></div><p style="font-size:13px;font-weight:600;color:var(--dark)">Reading Dashboard Reports</p><p style="font-size:12px;color:var(--gray);margin-top:2px">4:55</p></div>
+        </div>
+      </div>
+    </div>
+    <!-- Contact Us -->
+    <div class="dash-section" id="secContact">
+      <div style="max-width:700px">
+        <div class="section-header" style="text-align:left;margin-bottom:32px"><h2 style="font-size:24px">Contact Us</h2><p>Our team is here to help you succeed. Reach out anytime.</p></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:32px">
+          <div style="background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);text-align:center"><div style="width:56px;height:56px;border-radius:50%;background:var(--orange-light);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px"><i class="fas fa-envelope"></i></div><h4 style="font-size:15px;font-weight:700;color:var(--dark);margin-bottom:4px">Email Support</h4><a href="mailto:business@speakx.ai" style="font-size:14px;color:var(--orange);text-decoration:none;font-weight:600">business@speakx.ai</a><p style="font-size:12px;color:var(--gray);margin-top:6px">Response within 24 hours</p></div>
+          <div style="background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);text-align:center"><div style="width:56px;height:56px;border-radius:50%;background:var(--orange-light);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px"><i class="fas fa-phone"></i></div><h4 style="font-size:15px;font-weight:700;color:var(--dark);margin-bottom:4px">Phone Support</h4><a href="tel:+919217843731" style="font-size:14px;color:var(--orange);text-decoration:none;font-weight:600">+91 92178 43731</a><p style="font-size:12px;color:var(--gray);margin-top:6px">Mon–Sat, 9 AM – 7 PM IST</p></div>
+          <div style="background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);text-align:center"><div style="width:56px;height:56px;border-radius:50%;background:#D1FAE5;color:var(--green);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px"><i class="fab fa-whatsapp"></i></div><h4 style="font-size:15px;font-weight:700;color:var(--dark);margin-bottom:4px">WhatsApp</h4><a href="https://wa.me/919217843731" target="_blank" style="font-size:14px;color:var(--green);text-decoration:none;font-weight:600">Chat with us</a></div>
+        </div>
+        <div class="settings-form" style="max-width:100%">
+          <h3><i class="fas fa-paper-plane" style="color:var(--orange);margin-right:8px"></i>Send a Message</h3>
+          <div class="form-group"><label>Subject</label><select id="contactSubject"><option value="">Select a topic...</option><option>Technical Support</option><option>Billing Query</option><option>Feature Request</option><option>Account Issue</option><option>Partnership Inquiry</option><option>Other</option></select></div>
+          <div class="form-group"><label>Message</label><textarea id="contactMsg" style="width:100%;height:120px;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;resize:vertical;outline:none" placeholder="Describe your query..."></textarea></div>
+          <button class="btn btn-primary" onclick="sendContactMsg()"><i class="fas fa-paper-plane"></i> Send Message</button>
+        </div>
+      </div>
+    </div>
+    <!-- FAQ -->
+    <div class="dash-section" id="secFaq">
+      <div style="max-width:760px">
+        <div class="section-header" style="text-align:left;margin-bottom:32px"><h2 style="font-size:24px">Frequently Asked Questions</h2><p>Quick answers to common questions about the SpeakX platform.</p></div>
+        <div id="faqList" style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden"></div>
+      </div>
+    </div>
+    <!-- About Us -->
+    <div class="dash-section" id="secAbout">
+      <div style="max-width:760px">
+        <div class="section-header" style="text-align:left;margin-bottom:32px"><h2 style="font-size:24px">About SpeakX</h2><p>Building confident English communicators through AI-powered learning.</p></div>
+        <div style="background:var(--white);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow);margin-bottom:24px">
+          <h3 style="font-size:18px;font-weight:700;color:var(--dark);margin-bottom:12px">Our Mission</h3>
+          <p style="font-size:14px;color:var(--gray);line-height:1.8">SpeakX is an AI-powered English speaking mobile app helping organisations upskill their workforce with personalised, judgment-free spoken English practice. We believe everyone deserves access to quality English education — and AI makes it possible at scale.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+          <div style="background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);text-align:center"><div style="font-size:36px;font-weight:800;color:var(--orange);margin-bottom:4px">500+</div><div style="font-size:14px;color:var(--gray)">Enterprise Clients</div></div>
+          <div style="background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);text-align:center"><div style="font-size:36px;font-weight:800;color:var(--orange);margin-bottom:4px">200K+</div><div style="font-size:14px;color:var(--gray)">Active Learners</div></div>
+          <div style="background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);text-align:center"><div style="font-size:36px;font-weight:800;color:var(--orange);margin-bottom:4px">7</div><div style="font-size:14px;color:var(--gray)">Indian Languages</div></div>
+          <div style="background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);text-align:center"><div style="font-size:36px;font-weight:800;color:var(--orange);margin-bottom:4px">4.8★</div><div style="font-size:14px;color:var(--gray)">App Store Rating</div></div>
+        </div>
+        <div style="background:var(--white);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow);margin-bottom:24px">
+          <h3 style="font-size:18px;font-weight:700;color:var(--dark);margin-bottom:12px">Backed By</h3>
+          <p style="font-size:14px;color:var(--gray);line-height:1.8">SpeakX is backed by marquee investors including <b>IAN Fund</b>, <b>India Quotient</b>, and <b>Kalaari Capital</b>. Our technology is built on cutting-edge AI research in speech recognition and natural language processing.</p>
+        </div>
+        <div style="background:var(--white);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow)">
+          <h3 style="font-size:18px;font-weight:700;color:var(--dark);margin-bottom:12px">Company Details</h3>
+          <div style="display:grid;gap:12px;font-size:14px">
+            <div><span style="color:var(--gray)">Registered As:</span> <span style="color:var(--dark);font-weight:600">Ivypods Technology Private Limited</span></div>
+            <div><span style="color:var(--gray)">Head Office:</span> <span style="color:var(--dark);font-weight:600">Sector 47, Gurgaon, Haryana, India</span></div>
+            <div><span style="color:var(--gray)">Email:</span> <a href="mailto:business@speakx.ai" style="color:var(--orange);font-weight:600;text-decoration:none">business@speakx.ai</a></div>
+            <div><span style="color:var(--gray)">Phone:</span> <a href="tel:+919217843731" style="color:var(--orange);font-weight:600;text-decoration:none">+91 92178 43731</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Modify Seats Modal -->
+<div class="modal-overlay" id="modifySeatsModal">
+  <div class="modal-box">
+    <button class="close-modal" onclick="closeModal('modifySeatsModal')">&times;</button>
+    <h3><i class="fas fa-users" style="color:var(--orange);margin-right:8px"></i>Modify Seats</h3>
+    <div style="text-align:center;padding:20px 0">
+      <div style="width:64px;height:64px;border-radius:50%;background:var(--orange-light);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px"><i class="fas fa-headset"></i></div>
+      <p style="font-size:15px;color:var(--dark);font-weight:600;margin-bottom:8px">To modify your seat count, please contact your Relationship Manager.</p>
+      <p style="font-size:13px;color:var(--gray);line-height:1.7;margin-bottom:16px">Seat changes will be billed from the next billing cycle.</p>
+      <div style="background:var(--light);border-radius:var(--radius-sm);padding:16px;text-align:left">
+        <div style="font-size:13px;margin-bottom:8px"><i class="fas fa-envelope" style="color:var(--orange);margin-right:8px;width:16px"></i><a href="mailto:business@ivypods.com" style="color:var(--orange);text-decoration:none;font-weight:600">business@ivypods.com</a></div>
+        <div style="font-size:13px"><i class="fas fa-phone" style="color:var(--orange);margin-right:8px;width:16px"></i><a href="tel:+919217843731" style="color:var(--orange);text-decoration:none;font-weight:600">+91 92178 43731</a></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeModal('modifySeatsModal');showSec(document.querySelector('[data-sec=secContact]'))"><i class="fas fa-paper-plane"></i> Go to Contact Page</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Subscription Modal -->
+<div class="modal-overlay" id="cancelSubModal">
+  <div class="modal-box">
+    <button class="close-modal" onclick="closeModal('cancelSubModal')">&times;</button>
+    <h3><i class="fas fa-exclamation-triangle" style="color:var(--red);margin-right:8px"></i>Cancel Subscription</h3>
+    <p style="font-size:14px;color:var(--gray);line-height:1.7;margin-bottom:8px">Are you sure you want to cancel your subscription? You will retain full access until the end of your current billing period.</p>
+    <div style="background:#FEF2F2;border-radius:var(--radius-sm);padding:14px;font-size:13px;color:#991B1B" id="cancelInfo"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('cancelSubModal')">Keep Subscription</button>
+      <button class="btn btn-sm" style="background:var(--red);color:var(--white)" onclick="confirmCancelSub()"><i class="fas fa-times"></i> Cancel Subscription</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const D={mode:'annual',learners:50,price:199,discount:33,signup:{name:'',org:'',email:'',phone:''},emailOtp:'',phoneOtp:'',otpAttempts:0,loginMode:'phone',isLogin:false,
+  simActive:false,simUser:0,simStep:0,simCourse:'',simOtp:'',simQuizIdx:0,simQuizScore:0,simExIdx:0,
+  departments:['Sales','Operations','Customer Support','HR','Marketing','Engineering'],
+  users:[
+    {name:'Priya Sharma',email:'priya@acme.com',phone:'9876543210',status:'active',progress:95,dept:'Sales',assignedCourses:[]},
+    {name:'Rahul Verma',email:'rahul@acme.com',phone:'9876543211',status:'active',progress:92,dept:'Operations',assignedCourses:[]},
+    {name:'Anita Desai',email:'anita@acme.com',phone:'9876543212',status:'active',progress:90,dept:'Customer Support',assignedCourses:[]},
+    {name:'Vikram Singh',email:'vikram@acme.com',phone:'9876543213',status:'started',progress:45,dept:'Sales',assignedCourses:[]},
+    {name:'Meera Patel',email:'meera@acme.com',phone:'9876543214',status:'started',progress:30,dept:'HR',assignedCourses:[]},
+    {name:'Arjun Nair',email:'arjun@acme.com',phone:'9876543215',status:'not_started',progress:0,dept:'Marketing',assignedCourses:[]},
+    {name:'Sneha Gupta',email:'sneha@acme.com',phone:'9876543216',status:'inactive',progress:12,dept:'Engineering',assignedCourses:[]},
+    {name:'Karan Malhotra',email:'karan@acme.com',phone:'9876543217',status:'invited',progress:0,dept:'Operations',assignedCourses:[]},
+    {name:'Ritu Agarwal',email:'ritu@acme.com',phone:'9876543218',status:'active',progress:78,dept:'Customer Support',assignedCourses:[]},
+    {name:'Deepak Joshi',email:'deepak@acme.com',phone:'9876543219',status:'started',progress:55,dept:'Sales',assignedCourses:[]}
+  ],
+  courses:['Customer Service Excellence','Product Knowledge 101','New Employee Onboarding'],chatQ:0,courseStep:1,etimer:null,ptimer:null
+};
+
+function nav(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);if(id==='pageDashboard')renderDashboard();if(id==='pageLanding')setTimeout(animateStats,100)}
+function toast(msg,type='info'){const t=document.getElementById('toast');t.textContent=msg;t.className=type+' show';setTimeout(()=>t.classList.remove('show'),3000)}
+function showLoad(msg){document.getElementById('loadingText').textContent=msg;document.getElementById('loading').classList.add('show')}
+function hideLoad(){document.getElementById('loading').classList.remove('show')}
+
+function setMode(m,btn){D.mode=m;document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updatePricing()}
+function updatePricing(){const n=parseInt(document.getElementById('pricingSlider').value);D.learners=n;document.getElementById('sliderNum').textContent=n;
+  if(D.mode==='annual'){if(n<100){D.price=199;D.discount=33}else if(n<250){D.price=149;D.discount=50}else{D.price=99;D.discount=67}document.getElementById('mrpLine').style.display='';document.getElementById('discountBadge').style.display='';document.getElementById('discountBadge').textContent=D.discount+'% off'}
+  else{D.price=199;D.discount=0;document.getElementById('mrpLine').style.display='none';document.getElementById('discountBadge').style.display='none'}
+  const sub=D.price*n;document.getElementById('priceBreakdown').innerHTML=`<div class="price-row"><span class="lbl">Subtotal (${n} x ₹${D.price})</span><span class="val">₹${sub.toLocaleString('en-IN')}/mo</span></div><div class="price-row total"><span class="lbl">Total</span><span class="val">₹${sub.toLocaleString('en-IN')}/mo</span></div>`}
+
+function submitSignup(){let ok=true;const n=document.getElementById('sName'),o=document.getElementById('sOrg'),e=document.getElementById('sEmail'),p=document.getElementById('sPhone');
+  [n,o,e,p].forEach(i=>{let g=i.parentElement;if(g.classList.contains('phone-input'))g=g.parentElement;g.classList.remove('error')});
+  if(n.value.trim().length<2||!/^[A-Za-z][A-Za-z.\s]{0,48}[A-Za-z.]$/.test(n.value.trim())){n.parentElement.classList.add('error');ok=false}
+  if(!o.value.trim()){o.parentElement.classList.add('error');ok=false}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.value.trim())){e.parentElement.classList.add('error');ok=false}
+  let ph=p.value.replace(/^0/,'').trim();if(!/^[6-9]\d{9}$/.test(ph)){p.closest('.form-group').classList.add('error');ok=false}
+  if(!ok)return;D.signup={name:n.value.trim(),org:o.value.trim(),email:e.value.trim(),phone:ph};
+  D.emailOtp=String(Math.floor(100000+Math.random()*900000));D.phoneOtp=String(Math.floor(100000+Math.random()*900000));while(D.phoneOtp===D.emailOtp)D.phoneOtp=String(Math.floor(100000+Math.random()*900000));D.otpAttempts=0;
+  const masked='+91 '+ph.slice(0,2)+'•••••'+ph.slice(7);showLoad('Sending OTP to '+D.signup.email+' and '+masked+'...');setTimeout(()=>{hideLoad();nav('pageOtp');buildOtpPage(masked)},1200)}
+
+function buildOtpPage(masked){document.getElementById('otpSubtitle').innerHTML='OTP sent to <b>'+D.signup.email+'</b> and <b>'+masked+'</b>';document.getElementById('emailHint').textContent='Demo OTP: '+D.emailOtp;document.getElementById('phoneHint').textContent='Demo OTP: '+D.phoneOtp;buildOtpInputs('emailOtpInputs');buildOtpInputs('phoneOtpInputs');document.getElementById('otpError').className='otp-error';startOtpTimer()}
+function buildOtpInputs(cid){const c=document.getElementById(cid);c.innerHTML='';for(let i=0;i<6;i++){const inp=document.createElement('input');inp.type='text';inp.maxLength=1;
+  inp.addEventListener('input',function(){this.value=this.value.replace(/\D/,'');if(this.value){this.classList.add('filled');this.classList.remove('wrong');const nx=this.nextElementSibling;if(nx)nx.focus()}else this.classList.remove('filled')});
+  inp.addEventListener('keydown',function(e){if(e.key==='Backspace'&&!this.value){const pv=this.previousElementSibling;if(pv){pv.focus();pv.value='';pv.classList.remove('filled')}}});
+  inp.addEventListener('paste',function(e){e.preventDefault();const d=e.clipboardData.getData('text').replace(/\D/g,'').slice(0,6);const ins=c.querySelectorAll('input');d.split('').forEach((ch,j)=>{if(ins[j]){ins[j].value=ch;ins[j].classList.add('filled')}});const nx=ins[Math.min(d.length,5)];if(nx)nx.focus()});
+  c.appendChild(inp)}}
+function startOtpTimer(){clearInterval(D.etimer);let s=30;const el=document.getElementById('otpTimer');el.innerHTML='Resend OTP in <b>'+s+'s</b>';D.etimer=setInterval(()=>{s--;if(s<=0){clearInterval(D.etimer);el.innerHTML='<a onclick="resendOtp()">Resend OTP</a>'}else el.innerHTML='Resend OTP in <b>'+s+'s</b>'},1000)}
+function resendOtp(){D.emailOtp=String(Math.floor(100000+Math.random()*900000));D.phoneOtp=String(Math.floor(100000+Math.random()*900000));while(D.phoneOtp===D.emailOtp)D.phoneOtp=String(Math.floor(100000+Math.random()*900000));document.getElementById('emailHint').textContent='Demo OTP: '+D.emailOtp;document.getElementById('phoneHint').textContent='Demo OTP: '+D.phoneOtp;buildOtpInputs('emailOtpInputs');buildOtpInputs('phoneOtpInputs');startOtpTimer();toast('New OTP sent!','success')}
+function verifyOtp(){const eV=Array.from(document.querySelectorAll('#emailOtpInputs input')).map(i=>i.value).join('');const pV=Array.from(document.querySelectorAll('#phoneOtpInputs input')).map(i=>i.value).join('');const err=document.getElementById('otpError');
+  if(eV.length<6||pV.length<6){err.textContent='Please enter all 6 digits for both OTPs.';err.className='otp-error show';return}D.otpAttempts++;
+  if(eV!==D.emailOtp||pV!==D.phoneOtp){if(eV!==D.emailOtp)document.querySelectorAll('#emailOtpInputs input').forEach(i=>i.classList.add('wrong'));if(pV!==D.phoneOtp)document.querySelectorAll('#phoneOtpInputs input').forEach(i=>i.classList.add('wrong'));
+    if(D.otpAttempts>=3){err.textContent='Too many failed attempts. Please try again in 15 minutes.';err.className='otp-error show';return}
+    let w=(eV!==D.emailOtp&&pV!==D.phoneOtp)?'Email & Phone':(eV!==D.emailOtp?'Email':'Phone');err.textContent='Invalid OTP ('+w+'). Attempt '+D.otpAttempts+'/3.';err.className='otp-error show';return}
+  clearInterval(D.etimer);showLoad('Verifying identity...');setTimeout(()=>{hideLoad();if(D.isLogin){toast('Welcome back!','success');nav('pageDashboard')}else{nav('pagePayment');buildPayment()}},1200)}
+
+function buildPayment(){const n=D.learners,p=D.price,sub=n*p,gst=Math.round(sub*0.18),total=sub+gst,disc=D.mode==='annual'?299*n-sub:0;
+  let h=`<div class="summary-row"><span class="lbl">Plan</span><span class="val">${D.mode==='annual'?'Annual':'Monthly'} — ${n} Learners</span></div><div class="summary-row"><span class="lbl">Price/learner</span><span class="val">₹${p}/mo</span></div><div class="summary-row"><span class="lbl">Subtotal</span><span class="val">₹${sub.toLocaleString('en-IN')}/mo</span></div>`;
+  if(disc>0)h+=`<div class="summary-row"><span class="lbl">Annual Discount</span><span class="val green">-₹${disc.toLocaleString('en-IN')}</span></div>`;
+  h+=`<div class="summary-row"><span class="lbl">GST (18%)</span><span class="val">₹${gst.toLocaleString('en-IN')}</span></div><div class="summary-row total-row"><span class="lbl">Total</span><span class="val">₹${total.toLocaleString('en-IN')}/mo</span></div>`;document.getElementById('orderSummary').innerHTML=h}
+function switchPayTab(id,btn){document.querySelectorAll('.pay-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.pay-method').forEach(m=>m.classList.remove('active'));btn.classList.add('active');document.getElementById('pay'+id).classList.add('active')}
+function fmtCard(el){el.value=el.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim()}
+function fmtExp(el){let v=el.value.replace(/\D/g,'');if(v.length>=2)v=v.slice(0,2)+'/'+v.slice(2);el.value=v}
+function processPayment(){const act=document.querySelector('.pay-method.active');
+  if(act.id==='payCard'){const num=document.getElementById('cardNum').value.replace(/\s/g,''),exp=document.getElementById('cardExp').value,cvv=document.getElementById('cardCvv').value,nm=document.getElementById('cardName').value;let ok=true;document.querySelectorAll('#payCard .form-group').forEach(g=>g.classList.remove('error'));if(num.length!==16){document.getElementById('cardNum').parentElement.classList.add('error');ok=false}if(exp.length!==5){document.getElementById('cardExp').parentElement.classList.add('error');ok=false}if(cvv.length!==3){document.getElementById('cardCvv').parentElement.classList.add('error');ok=false}if(!nm.trim()){document.getElementById('cardName').parentElement.classList.add('error');ok=false}if(!ok)return}
+  else if(act.id==='payUpi'){if(!document.getElementById('upiId').value.includes('@')){document.getElementById('upiId').parentElement.classList.add('error');return}}
+  else{if(!document.getElementById('nbBank').value){toast('Please select a bank','error');return}}
+  showLoad('Setting up autopay via Razorpay...');setTimeout(()=>{document.getElementById('loadingText').textContent='Verifying payment method...';setTimeout(()=>{document.getElementById('loadingText').textContent='Activating 7-day free trial...';setTimeout(()=>{hideLoad();toast('Payment setup complete! 7-day free trial activated.','success');nav('pageDashboard')},800)},1000)},1200)}
+
+function animateNum(el,target,suffix,dur){dur=dur||800;let start=null;const isFloat=String(target).includes('.');function step(ts){if(!start)start=ts;const p=Math.min((ts-start)/dur,1);const eased=1-Math.pow(1-p,3);const val=isFloat?(eased*target).toFixed(1):Math.floor(eased*target);el.textContent=val+(suffix||'');if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
+function renderDashboard(){updateSidebar();updateSeatCount();renderOverview();renderUsers();renderAssignDropdown();populateSettings();renderBilling();renderFaqs();D.courseStep=1;resetCourseCreator();initNotifications()}
+function updateSeatCount(){document.getElementById('seatText').textContent=D.users.length+'/'+D.learners+' Seats'}
+function updateSidebar(){const n=D.signup.name||'Admin';document.getElementById('sidebarAvatar').textContent=n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);document.getElementById('sidebarName').textContent=n}
+function showSec(el){document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');const s=el.dataset.sec;document.querySelectorAll('.dash-section').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');const t={secOverview:'Overview',secUsers:'New User',secCourses:'Create Course',secAssign:'Assign Course',secLearnerApp:'Learner App',secFaq:"FAQ's",secAbout:'About Us',secContact:'Contact Us',secKnowledge:'Knowledge Bank',secSettings:'Settings',secBilling:'Plan & Billing'};document.getElementById('dashTitle').textContent=t[s]||'Dashboard';if(s==='secUsers')renderUsers();if(s==='secCourses')resetCourseCreator()}
+
+function renderOverview(){const u=D.users,tot=u.length,ex=u.reduce((s,x)=>s+Math.round(x.progress*0.48),0),avg=tot?Math.round(u.reduce((s,x)=>s+x.progress*0.26,0)/tot):0,comp=tot?Math.round(u.filter(x=>x.progress>=80).length/tot*100):0;
+  /* Focus Cards */
+  const inactive=u.filter(x=>x.status==='invited'||x.status==='not_started').length;const lowEng=u.filter(x=>(x.status==='active'||x.status==='started')&&x.progress<30).length;
+  document.getElementById('focusCards').innerHTML=`<div class="animate-in" style="background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border-left:4px solid var(--yellow);transition:transform .25s ease,box-shadow .25s ease;animation-delay:0ms"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><i class="fas fa-exclamation-triangle" style="color:var(--yellow);font-size:18px"></i><h3 style="font-size:16px;font-weight:700;color:var(--dark)">Inactive Users</h3></div><p style="font-size:14px;color:var(--gray);margin-bottom:16px"><b style="color:var(--dark)">${inactive} learners</b> haven't started yet</p><button class="btn btn-outline btn-sm" onclick="resendAllInvites()"><i class="fas fa-paper-plane"></i> Resend Invite</button></div><div class="animate-in" style="background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border-left:4px solid var(--red);transition:transform .25s ease,box-shadow .25s ease;animation-delay:100ms"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><i class="fas fa-chart-line-down" style="color:var(--red);font-size:18px"></i><h3 style="font-size:16px;font-weight:700;color:var(--dark)">Low Engagement</h3></div><p style="font-size:14px;color:var(--gray);margin-bottom:16px"><b style="color:var(--dark)">${lowEng} learners</b> haven't exercised in last week</p><button class="btn btn-outline btn-sm" onclick="sendAllReminders()"><i class="fas fa-bell"></i> Send Reminders</button></div>`;
+  /* Metrics with stagger + count-up */
+  const metrics=[{l:'Total Learners',v:tot,c:'+12%',up:1,s:''},{l:'Users Started Exercise',v:u.filter(x=>x.progress>0).length,c:'+8%',up:1,s:''},{l:'Users Not Started',v:u.filter(x=>x.progress===0).length,c:'-3%',up:0,s:''},{l:'Weekly Active Time',v:avg*7,c:'+5%',up:1,s:'hrs'}];
+  document.getElementById('metricCards').innerHTML=metrics.map((c,i)=>`<div class="metric-card animate-in" style="animation-delay:${i*80}ms"><div class="mc-label">${c.l}</div><div class="mc-val" data-target="${c.v}" data-suffix="${c.s}">0${c.s}</div><div class="mc-change ${c.up?'up':'down'}"><i class="fas fa-arrow-${c.up?'up':'down'}"></i> ${c.c}</div></div>`).join('');
+  setTimeout(()=>{document.querySelectorAll('#metricCards .mc-val[data-target]').forEach(el=>{animateNum(el,+el.dataset.target,el.dataset.suffix,900)})},200);
+  /* Top 3 */
+  const top3=[...u].sort((a,b)=>b.progress-a.progress).slice(0,3);document.getElementById('top3Card').innerHTML=`<h3 style="font-size:16px;font-weight:700;color:var(--dark);margin-bottom:16px"><i class="fas fa-trophy" style="color:var(--yellow);margin-right:8px"></i>Top 3 Users (Last 7 Days)</h3>`+top3.map((x,i)=>{const ri=D.users.indexOf(x);const hrs=Math.round(x.progress*0.26);const mins=Math.round((x.progress*0.26%1)*60);return`<div style="display:flex;align-items:center;gap:16px;padding:12px 0;${i<2?'border-bottom:1px solid var(--border)':''}"><span style="font-size:18px;font-weight:800;color:${i===0?'var(--orange)':i===1?'var(--gray)':'#CD7F32'};width:28px">${i+1}.</span><b style="color:var(--orange);cursor:pointer;flex:1" onclick="openLearnerProfile(${ri})">${x.name}</b><span style="font-size:14px;color:var(--dark);font-weight:600">${hrs}hrs ${mins}min</span></div>`}).join('');
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];const shuffled=[...u].sort(()=>Math.random()-0.5);D.dayLearners={};days.forEach((d,i)=>{const count=Math.floor(Math.random()*(tot||1));D.dayLearners[d]=shuffled.slice(0,count).map(x=>({name:x.name,email:x.email,progress:x.progress,idx:D.users.indexOf(x)}))});const barCounts=days.map(d=>D.dayLearners[d].length);const barMax=Math.max(...barCounts,1);const barHeights=barCounts.map(c=>Math.round(c/barMax*90)+10);document.getElementById('chartBars').innerHTML=days.map((d,i)=>`<div class="chart-bar" onclick="showDayLearners('${d}',${i})"><div class="bar" data-h="${barHeights[i]}" style="height:0%"><div class="bar-val">${barCounts[i]}</div></div><div class="bar-label">${d}</div></div>`).join('');
+  document.getElementById('dayLearnerList').style.display='none';
+  setTimeout(()=>{document.querySelectorAll('#chartBars .bar[data-h]').forEach((b,i)=>{setTimeout(()=>{b.style.height=b.dataset.h+'%'},i*80)})},300);
+  const sorted=[...u].sort((a,b)=>b.progress-a.progress).slice(0,5);document.getElementById('perfBody').innerHTML=sorted.map(x=>{const ri=D.users.indexOf(x);return`<tr><td><b style="color:var(--orange);cursor:pointer" onclick="openLearnerProfile(${ri})">${x.name}</b></td><td>${Math.round(x.progress*0.48)}</td><td>${Math.round(x.progress*0.26)} min</td><td style="color:${x.progress>=80?'var(--green)':x.progress>=50?'var(--yellow)':'var(--red)'};font-weight:700">${x.progress}%</td></tr>`}).join('')}
+
+function showDayLearners(day,idx){const list=D.dayLearners[day]||[];const el=document.getElementById('dayLearnerList');document.querySelectorAll('.chart-bar').forEach((c,i)=>{c.style.opacity=i===idx?'1':'0.4';c.querySelector('.bar-label').style.fontWeight=i===idx?'700':'500'});if(!list.length){el.style.display='block';el.innerHTML=`<div style="text-align:center;padding:16px;color:var(--gray)"><i class="fas fa-user-slash" style="font-size:20px;margin-bottom:8px;display:block"></i>No active learners on <b>${day}</b></div>`;return}el.style.display='block';el.innerHTML=`<div style="display:flex;align-items:center;justify-content:between;margin-bottom:12px"><h4 style="font-size:14px;font-weight:700;color:var(--dark);flex:1"><i class="fas fa-users" style="color:var(--orange);margin-right:8px"></i>${day} — ${list.length} Active Learner${list.length>1?'s':''}</h4><button onclick="document.getElementById('dayLearnerList').style.display='none';document.querySelectorAll('.chart-bar').forEach(c=>{c.style.opacity='1';c.querySelector('.bar-label').style.fontWeight='500'})" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:16px"><i class="fas fa-times"></i></button></div><table style="width:100%;font-size:13px"><thead><tr style="text-align:left"><th style="padding:8px 12px;color:var(--gray);font-weight:600;font-size:11px;text-transform:uppercase">Learner</th><th style="padding:8px 12px;color:var(--gray);font-weight:600;font-size:11px;text-transform:uppercase">Email</th><th style="padding:8px 12px;color:var(--gray);font-weight:600;font-size:11px;text-transform:uppercase">Progress</th></tr></thead><tbody>${list.map(l=>`<tr><td style="padding:8px 12px"><b style="color:var(--orange);cursor:pointer" onclick="openLearnerProfile(${l.idx})">${l.name}</b></td><td style="padding:8px 12px;color:var(--gray)">${l.email}</td><td style="padding:8px 12px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:6px;background:var(--border);border-radius:3px;max-width:80px"><div style="height:100%;border-radius:3px;background:${l.progress>=80?'var(--green)':l.progress>=50?'var(--orange)':'var(--red)'};width:${l.progress}%"></div></div><span style="font-weight:600;color:var(--dark);font-size:12px">${l.progress}%</span></div></td></tr>`).join('')}</tbody></table>`}
+
+function renderUsers(){const search=(document.getElementById('userSearch')?.value||'').toLowerCase(),filter=document.getElementById('userFilter')?.value||'';let list=D.users;if(search)list=list.filter(u=>u.name.toLowerCase().includes(search)||u.email.toLowerCase().includes(search)||u.phone.includes(search));if(filter)list=list.filter(u=>u.status===filter);
+  const sm={active:['Active','status-active'],started:['Exercise Started','status-active'],not_started:['Not Yet Started','status-pending'],inactive:['Inactive','status-inactive'],invited:['Invite Sent','status-pending']};
+  document.getElementById('usersBody').innerHTML=list.map(u=>{const[lb,cl]=sm[u.status]||['—',''];const bc=u.progress>=80?'var(--green)':u.progress>=50?'var(--yellow)':'var(--red)';const ri=D.users.indexOf(u);return`<tr><td><b style="color:var(--orange);cursor:pointer" onclick="openLearnerProfile(${ri})">${u.name}</b></td><td>${u.email}</td><td>+91 ${u.phone}</td><td><span style="font-size:12px;color:var(--gray)">${u.dept||'—'}</span></td><td><span class="status-badge ${cl}">${lb}</span></td><td><span class="progress-mini"><span class="fill" style="width:${u.progress}%;background:${bc}"></span></span>${u.progress}%</td><td><button class="action-btn" onclick="sendReminder(${ri})" title="Send Reminder"><i class="fas fa-bell"></i></button>${u.status==='inactive'?`<button class="action-btn del" onclick="removeUser(${ri})" title="Remove"><i class="fas fa-trash"></i></button>`:''}</td></tr>`}).join('')}
+function sendReminder(i){toast(D.users[i].name+' reminder sent!','success');addNotification('bell','Reminder sent to <b>'+D.users[i].name+'</b>','Just now')}
+
+/* Notifications */
+function initNotifications(){const times=['2 min ago','15 min ago','1 hr ago','3 hrs ago','Yesterday','2 days ago'];const notifs=[{icon:'user-plus',color:'var(--green)',bg:'#e6f9e6',msg:'<b>Karan Malhotra</b> accepted the invite and logged in',t:times[1],unread:true},{icon:'trophy',color:'var(--yellow)',bg:'#fff8e6',msg:'<b>Priya Sharma</b> completed 50 exercises this week',t:times[2],unread:true},{icon:'chart-line',color:'var(--orange)',bg:'var(--orange-light)',msg:'Weekly active time increased by <b>18%</b> vs last week',t:times[2],unread:true},{icon:'exclamation-circle',color:'var(--red)',bg:'#fde8e8',msg:'<b>3 learners</b> haven\'t logged in for 7+ days',t:times[3],unread:false},{icon:'book',color:'#6366f1',bg:'#eef2ff',msg:'Custom course <b>"Customer Service"</b> published successfully',t:times[4],unread:false},{icon:'bell',color:'var(--gray)',bg:'var(--light)',msg:'Reminders sent to <b>5 inactive learners</b>',t:times[5],unread:false}];D.notifications=notifs;renderNotifications()}
+function renderNotifications(){const list=D.notifications||[];const unread=list.filter(n=>n.unread).length;document.getElementById('notifBadge').textContent=unread;document.getElementById('notifDot').style.display=unread?'block':'none';document.getElementById('notifList').innerHTML=list.length?list.map((n,i)=>`<div class="notif-item${n.unread?' unread':''}" onclick="D.notifications[${i}].unread=false;renderNotifications()"><div class="notif-icon" style="background:${n.bg};color:${n.color}"><i class="fas fa-${n.icon}"></i></div><div class="notif-body"><p>${n.msg}</p><div class="notif-time">${n.t}</div></div></div>`).join(''):'<div style="padding:24px;text-align:center;color:var(--gray);font-size:13px">No notifications</div>'}
+function toggleNotifDropdown(){const dd=document.getElementById('notifDropdown');dd.classList.toggle('open');if(dd.classList.contains('open')){document.addEventListener('click',closeNotifOutside,true)}}
+function closeNotifOutside(e){if(!e.target.closest('.notif-wrapper')){document.getElementById('notifDropdown').classList.remove('open');document.removeEventListener('click',closeNotifOutside,true)}}
+function markAllNotifRead(){D.notifications.forEach(n=>n.unread=false);renderNotifications()}
+function addNotification(icon,msg,t){D.notifications.unshift({icon,color:'var(--orange)',bg:'var(--orange-light)',msg,t:t||'Just now',unread:true});renderNotifications()}
+function resendAllInvites(){const cnt=D.users.filter(x=>x.status==='invited'||x.status==='not_started').length;showLoad('Resending invites to '+cnt+' learners...');setTimeout(()=>{hideLoad();toast('Invites resent to '+cnt+' learners!','success')},1500)}
+function sendAllReminders(){const cnt=D.users.filter(x=>(x.status==='active'||x.status==='started')&&x.progress<30).length;showLoad('Sending reminders to '+cnt+' learners...');setTimeout(()=>{hideLoad();toast('Reminders sent to '+cnt+' learners!','success')},1500)}
+function removeUser(i){D.users.splice(i,1);toast('User removed.','info');renderUsers();renderOverview()}
+
+/* ===== LEARNER PROFILE ===== */
+function openLearnerProfile(i){D.viewingLearner=i;const u=D.users[i];if(!u)return;
+  const initials=u.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const colors=['#FF6B2C','#3B82F6','#10B981','#F59E0B','#8B5CF6','#EF4444','#06B6D4'];
+  document.getElementById('lpAvatar').textContent=initials;document.getElementById('lpAvatar').style.background=colors[i%colors.length];
+  document.getElementById('lpName').textContent=u.name;
+  document.getElementById('lpPhone').textContent='+91 '+u.phone;
+  const sm={active:['Active','status-active'],started:['Exercise Started','status-active'],not_started:['Not Yet Started','status-pending'],inactive:['Inactive','status-inactive'],invited:['Invite Sent','status-pending']};
+  const[lb,cl]=sm[u.status]||['—',''];document.getElementById('lpStatus').textContent=lb;document.getElementById('lpStatus').className='lp-status '+cl;
+  const courses=['Customer Service Excellence','Product Knowledge 101'];document.getElementById('lpCourses').innerHTML=courses.map(c=>'<span class="lp-tag"><i class="fas fa-book" style="margin-right:4px"></i>'+c+'</span>').join('');
+  const sent=Math.round(u.progress*103);document.getElementById('lpSentences').textContent=sent.toLocaleString('en-IN');
+  document.getElementById('lpConfidence').textContent=Math.round(u.progress*9.3)+'%';
+  document.getElementById('lpExercises').textContent=Math.round(u.progress*11.2);
+  D.lpTimeData={all:Math.round(u.progress*18.4),month:Math.round(u.progress*6.2),week:Math.round(u.progress*1.8)};
+  const allMins=D.lpTimeData.all;document.getElementById('lpTime').textContent=Math.floor(allMins/60)+'hrs '+Math.round(allMins%60)+'min';
+  const days=['Today','Yesterday'];const d=new Date();for(let j=2;j<7;j++){const dd=new Date(d);dd.setDate(dd.getDate()-j);days.push(dd.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}))}
+  document.getElementById('lpDailyBody').innerHTML=days.map((day,j)=>{const t=Math.round(5+Math.random()*25);const s=Math.round(20+Math.random()*50);const e=Math.round(2+Math.random()*8);return`<tr><td>${day}</td><td>${t} min</td><td>${s}</td><td>${e}</td></tr>`}).join('');
+  document.querySelectorAll('.sidebar-item').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.dash-section').forEach(x=>x.classList.remove('active'));
+  document.getElementById('secLearnerProfile').classList.add('active');
+  document.getElementById('dashTitle').textContent='Overview > User Profile'}
+function switchTimeView(period,btn){btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const mins=D.lpTimeData[period]||0;document.getElementById('lpTime').textContent=Math.floor(mins/60)+'hrs '+Math.round(mins%60)+'min'}
+function sendReminderProfile(){const u=D.users[D.viewingLearner];toast((u?.name||'Learner')+' reminder sent!','success')}
+function downloadLearnerReport(){const u=D.users[D.viewingLearner];showLoad('Generating report for '+(u?.name||'Learner')+'...');setTimeout(()=>{hideLoad();toast('Report downloaded as '+((u?.name||'Learner').replace(/\s/g,'_'))+'_Report.xlsx','success')},1500)}
+function switchTab(id,btn){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));btn.classList.add('active');document.getElementById(id).classList.add('active')}
+function addSingleUser(){const n=document.getElementById('auName').value.trim(),e=document.getElementById('auEmail').value.trim(),p=document.getElementById('auPhone').value.replace(/^0/,'').trim();if(n.length<2||!/^[A-Za-z][A-Za-z.\s]{0,48}[A-Za-z.]$/.test(n)){toast('Name must be 2+ characters, only letters, spaces and dots.','error');return}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){toast('Please enter a valid email.','error');return}if(!/^[6-9]\d{9}$/.test(p)){toast('Phone must be 10 digits starting with 6-9.','error');return}if(D.users.find(u=>u.email===e)){toast('Email already exists!','error');return}const dept=document.getElementById('auDept').value;D.users.push({name:n,email:e,phone:p,dept:dept,status:'invited',progress:0});document.getElementById('auName').value='';document.getElementById('auEmail').value='';document.getElementById('auPhone').value='';document.getElementById('auDept').value='';toast(n+' added successfully!','success');switchTab('tabAll',document.querySelectorAll('.tab-btn')[0]);renderUsers();renderOverview()}
+function bulkImport(){const raw=document.getElementById('bulkData').value.trim();if(!raw){toast('Please paste user data.','error');return}const lines=raw.split('\n').filter(l=>l.trim());let added=0,dupes=0,errs=0;lines.forEach(line=>{const parts=line.split(/[,\t]/).map(s=>s.trim());if(parts.length<3)return;const[name,email,phone,dept]=parts;const ph=phone.replace(/^(\+91|0)/,'');if(!/^[A-Za-z][A-Za-z.\s]+$/.test(name)||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!/^[6-9]\d{9}$/.test(ph)){errs++;return}if(D.users.find(u=>u.email===email)){dupes++;return}D.users.push({name,email,phone:ph,dept:dept||'',status:'invited',progress:0});added++});document.getElementById('bulkData').value='';toast(added+' users imported!'+(dupes?' ('+dupes+' duplicates skipped)':'')+(errs?' ('+errs+' invalid rows skipped)':''),'success');switchTab('tabAll',document.querySelectorAll('.tab-btn')[0]);renderUsers();renderOverview()}
+
+function handleBulkFile(input){const file=input.files[0];if(!file)return;const ext=file.name.split('.').pop().toLowerCase();if(!['csv','xls','xlsx'].includes(ext)){toast('Please upload a CSV or Excel file.','error');input.value='';return}document.getElementById('bulkFileInfo').style.display='flex';document.getElementById('bulkFileName').textContent=file.name+' ('+Math.round(file.size/1024)+' KB)';if(ext==='csv'){const reader=new FileReader();reader.onload=function(e){const text=e.target.result;const lines=text.split('\n').filter(l=>l.trim());const dataLines=lines.filter(l=>!/^name/i.test(l.trim()));document.getElementById('bulkData').value=dataLines.join('\n');toast(dataLines.length+' rows loaded from CSV','success')};reader.readAsText(file)}else{toast('Excel file selected. For this demo, data is simulated.','info');document.getElementById('bulkData').value='Amit Kumar, amit@company.com, 9876500001\nNeha Singh, neha@company.com, 9876500002\nRavi Patel, ravi@company.com, 9876500003\nSunita Rao, sunita@company.com, 9876500004\nManoj Gupta, manoj@company.com, 9876500005'}}
+function clearBulkFile(){document.getElementById('bulkFileInput').value='';document.getElementById('bulkFileInfo').style.display='none';document.getElementById('bulkData').value=''}
+
+const aiQ=["Hi! I've analyzed your uploaded documents. They contain detailed SOPs and procedures. Let me build a custom course.\n\nWhat is the primary role of the learners?","What language should the course be in — English, Hindi, or both?","How many modules would you ideally like? I'd suggest 5-7.","Should I include AI conversation practice for role-playing?","Excellent! Generating your custom course now..."];
+function resetCourseCreator(){D.courseStep=1;D.chatQ=0;['sc1','sc2','sc3'].forEach((id,i)=>{const el=document.getElementById(id);el.className='step-circle'+(i===0?' active':'');el.textContent=i+1});['sl1','sl2'].forEach(id=>document.getElementById(id).className='step-line');['cStep1','cStep2','cStep3'].forEach((id,i)=>document.getElementById(id).className='course-step'+(i===0?' active':''));document.getElementById('fileList').style.display='none';document.getElementById('continueStep2').style.display='none';document.getElementById('chatInputBar').style.display='flex'}
+function simulateUpload(){showLoad('Uploading documents...');setTimeout(()=>{document.getElementById('loadingText').textContent='Analyzing with AI...';setTimeout(()=>{hideLoad();document.getElementById('fileList').innerHTML=[{n:'Customer_Service_SOP.pdf',s:'2.4 MB',i:'fa-file-pdf'},{n:'Product_Manual_v3.docx',s:'1.8 MB',i:'fa-file-word'},{n:'Escalation_Procedures.pdf',s:'890 KB',i:'fa-file-pdf'}].map(f=>`<div class="file-item"><i class="fas ${f.i}"></i><div class="file-info">${f.n}<div class="file-size">${f.s}</div></div><i class="fas fa-check-circle"></i></div>`).join('');document.getElementById('fileList').style.display='flex';document.getElementById('continueStep2').style.display='inline-flex'},1500)},1200)}
+function goStep(n){D.courseStep=n;['cStep1','cStep2','cStep3'].forEach((id,i)=>document.getElementById(id).className='course-step'+(i===n-1?' active':''));if(n>=2){document.getElementById('sc1').className='step-circle done';document.getElementById('sc1').innerHTML='<i class="fas fa-check"></i>';document.getElementById('sl1').className='step-line done'}if(n>=3){document.getElementById('sc2').className='step-circle done';document.getElementById('sc2').innerHTML='<i class="fas fa-check"></i>';document.getElementById('sl2').className='step-line done'}if(n===2){document.getElementById('sc2').classList.add('active');D.chatQ=0;document.getElementById('chatMessages').innerHTML='';document.getElementById('chatInputBar').style.display='flex';setTimeout(()=>addAiMsg(aiQ[0]),500)}if(n===3){document.getElementById('sc3').classList.add('active');buildCoursePreview()}}
+function addAiMsg(text){const c=document.getElementById('chatMessages');const t=document.createElement('div');t.className='typing-indicator';t.innerHTML='<span></span><span></span><span></span>';c.appendChild(t);c.scrollTop=c.scrollHeight;setTimeout(()=>{t.remove();const m=document.createElement('div');m.className='chat-msg ai';m.textContent=text;c.appendChild(m);c.scrollTop=c.scrollHeight},1000)}
+function sendChat(){const inp=document.getElementById('chatInput');const v=inp.value.trim();if(!v)return;const c=document.getElementById('chatMessages');const m=document.createElement('div');m.className='chat-msg user';m.textContent=v;c.appendChild(m);inp.value='';c.scrollTop=c.scrollHeight;D.chatQ++;if(D.chatQ<4){setTimeout(()=>addAiMsg(aiQ[D.chatQ]),800)}else{setTimeout(()=>{addAiMsg(aiQ[4]);setTimeout(()=>{document.getElementById('chatInputBar').style.display='none';showLoad('Processing your inputs...');setTimeout(()=>{hideLoad();goStep(3);showCourseInProgress()},2000)},2000)},800)}}
+function showCourseInProgress(){const cn='Customer Service Excellence (Custom)';if(!D.courses.includes(cn))D.courses.push(cn);renderAssignDropdown();
+  document.getElementById('cStep3').innerHTML=`<div style="text-align:center;padding:48px 24px"><div style="width:80px;height:80px;border-radius:50%;background:var(--orange-light);display:flex;align-items:center;justify-content:center;margin:0 auto 20px"><i class="fas fa-cogs" style="font-size:32px;color:var(--orange)"></i></div><h3 style="font-size:20px;font-weight:700;color:var(--dark);margin-bottom:8px">Your Course is Being Created</h3><p style="font-size:14px;color:var(--gray);max-width:440px;margin:0 auto 24px;line-height:1.6">Our AI is building your custom course with role-plays, vocabulary, and practice scenarios tailored to your team. This typically takes <b style="color:var(--dark)">2–3 hours</b>.</p><div style="background:var(--light);border-radius:var(--radius);padding:16px 20px;max-width:400px;margin:0 auto 24px;text-align:left"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><i class="fas fa-bell" style="color:var(--orange)"></i><span style="font-size:13px;font-weight:600;color:var(--dark)">You will be notified</span></div><p style="font-size:13px;color:var(--gray);margin:0">We'll send you a notification once your course is ready. It will automatically appear in Assign Course.</p></div><div style="display:flex;gap:12px;justify-content:center"><button class="btn btn-primary" onclick="showSec(document.querySelector('[data-sec=secOverview]'))"><i class="fas fa-arrow-left"></i> Back to Dashboard</button></div></div>`}
+function simulateCourseReady(){addNotification('graduation-cap','Your custom course <b>Customer Service Excellence</b> is ready to review!','Just now');toast('Course is ready! Opening preview...','success');setTimeout(()=>buildCoursePreview(),800)}
+function buildCoursePreview(){const mods=[{n:'Introduction to Service Standards',e:3,t:'20 min',tp:'Vocabulary + Quiz'},{n:'Product Knowledge Essentials',e:5,t:'35 min',tp:'Reading + Speaking'},{n:'Handling Customer Queries',e:4,t:'30 min',tp:'AI Conversation'},{n:'Escalation Procedures',e:3,t:'25 min',tp:'Scenario Practice'},{n:'Communication Best Practices',e:4,t:'30 min',tp:'Speaking + Roleplay'},{n:'Final Assessment',e:2,t:'20 min',tp:'Comprehensive Test'}];
+  const totalMin=mods.reduce((s,m)=>s+parseInt(m.t),0);const totalHrs=Math.floor(totalMin/60);const remMin=totalMin%60;const timeStr=totalHrs?totalHrs+'h '+remMin+'m':totalMin+' min';
+  document.getElementById('cStep3').innerHTML=`<div class="course-preview-header"><i class="fas fa-graduation-cap"></i><div><h3>Customer Service Excellence</h3><div class="meta">${mods.length} Modules • ${totalMin} min (${timeStr})</div></div></div>${mods.map((m,i)=>`<div class="module-card"><div class="module-num">${i+1}</div><div class="module-info"><h4>${m.n}</h4><p>${m.e} exercises • ${m.tp}</p></div><div class="module-meta"><span>${m.t}</span></div></div>`).join('')}<div style="display:flex;gap:12px;margin-top:24px"><button class="btn btn-primary" onclick="showSec(document.querySelector('[data-sec=secAssign]'))"><i class="fas fa-paper-plane"></i> Go to Assign Course</button><button class="btn btn-outline" onclick="showSec(document.querySelector('[data-sec=secOverview]'))"><i class="fas fa-arrow-left"></i> Back to Dashboard</button></div>`}
+function publishCourse(){showLoad('Publishing course...');setTimeout(()=>{hideLoad();const cn='Customer Service Excellence (Custom)';if(!D.courses.includes(cn))D.courses.push(cn);renderAssignDropdown();addNotification('check-circle','Course <b>Customer Service Excellence</b> published and ready to assign!','Just now');toast('Course published!','success');showSec(document.querySelector('[data-sec=secAssign]'))},1500)}
+
+function renderAssignDropdown(){document.getElementById('asCourse').innerHTML='<option value="">Choose a course...</option>'+D.courses.map(c=>`<option value="${c}">${c}</option>`).join('');const dOpts=D.departments.map(d=>`<option value="${d}">${d}</option>`).join('');document.getElementById('asDept').innerHTML='<option value="">All Departments</option>'+dOpts;if(document.getElementById('auDept'))document.getElementById('auDept').innerHTML='<option value="">Select Department</option>'+dOpts}
+function assignCourse(){const course=document.getElementById('asCourse').value;if(!course){toast('Please select a course.','error');return}const to=document.getElementById('asTo').value;const deptFilter=document.getElementById('asDept').value;
+  let pool=D.users.map((u,i)=>({u,i}));if(deptFilter)pool=pool.filter(x=>x.u.dept===deptFilter);
+  let targets=[];
+  if(to==='all')targets=pool.map(x=>x.i);
+  else if(to==='new')targets=pool.filter(x=>x.u.status==='invited'||x.u.status==='not_started').map(x=>x.i);
+  else if(to==='inactive')targets=pool.filter(x=>x.u.status==='inactive').map(x=>x.i);
+  targets.forEach(i=>{if(!D.users[i].assignedCourses)D.users[i].assignedCourses=[];if(!D.users[i].assignedCourses.includes(course))D.users[i].assignedCourses.push(course)});
+  D.simUser=targets.length?targets[0]:0;D.simCourse=course;
+  const nf=document.getElementById('asNotify').checked;showLoad('Assigning '+course+' to '+targets.length+' learners...');
+  setTimeout(()=>{hideLoad();toast('Course assigned to '+targets.length+' learners!'+(nf?' Notifications sent.':''),'success');document.getElementById('simPrompt').style.display='block'},1500)}
+
+function showLearnerScreen(id){document.querySelectorAll('.ls-screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+
+/* ===== LEARNER SIMULATOR ===== */
+const simSteps=[
+  {label:'Email',icon:'fa-envelope',narr:'<h4>📧 Email Invite Received</h4><p>After the admin adds the learner and assigns a course, SpeakX sends a welcome email with the download link. No organisation name is shown — just "Your premium access is ready."</p>'},
+  {label:'Download',icon:'fa-download',narr:'<h4>📲 App Download</h4><p>The learner opens the Play Store, finds SpeakX, and installs it on their phone. The app is lightweight and installs quickly.</p>'},
+  {label:'Login',icon:'fa-sign-in-alt',narr:'<h4>🔐 Login</h4><p>The learner opens the app and enters their registered mobile number to get started.</p>'},
+  {label:'OTP',icon:'fa-key',narr:'<h4>🔑 OTP Verification</h4><p>A one-time password is sent to their phone. They enter it to securely verify their identity.</p>'},
+  {label:'Assessment',icon:'fa-clipboard-check',narr:'<h4>📝 Proficiency Assessment</h4><p>The learner takes a quick 5-question assessment to determine their current English level (A1–B2).</p>'},
+  {label:'Exercises',icon:'fa-dumbbell',narr:'<h4>💪 Exercise Completion</h4><p>The learner completes vocabulary, quiz, speaking, and AI conversation exercises in their assigned course.</p>'},
+  {label:'Dashboard',icon:'fa-chart-line',narr:'<h4>📊 Live Dashboard Update</h4><p>The admin dashboard instantly reflects the learner\'s progress, scores, and activity. Status changes from "Invite Sent" → "Active" → "Exercise Started." All metrics update in real-time.</p>'}
+];
+
+function startLearnerSim(){
+  D.simActive=true;D.simStep=1;
+  document.getElementById('simPrompt').style.display='none';
+  document.getElementById('learnerInfoDefault').style.display='none';
+  document.getElementById('simNarrationPanel').classList.add('active');
+  showSec(document.querySelector('[data-sec=secLearnerApp]'));
+  updateSimNarration(1);
+  buildSimEmail();
+  showLearnerScreen('lsEmail');
+}
+
+function updateSimNarration(step){
+  D.simStep=step;
+  const dots=document.getElementById('simProgressDots');
+  dots.innerHTML=simSteps.map((s,i)=>{
+    const state=i<step-1?'done':i===step-1?'current':'';
+    const line=i<simSteps.length-1?`<div class="sim-line${i<step-1?' done':''}"></div>`:'';
+    return `<div class="sim-dot ${state}">${i<step-1?'<i class="fas fa-check" style="font-size:10px"></i>':(i+1)}</div>${line}`;
+  }).join('');
+  document.getElementById('simNarration').innerHTML=simSteps[step-1].narr;
+}
+
+function buildSimEmail(){
+  const user=D.users[D.simUser];
+  document.getElementById('simEmailList').innerHTML=`
+    <div class="sim-email-row unread" onclick="openSimInvite()">
+      <div class="email-dot"></div>
+      <div style="flex:1">
+        <div class="email-from">SpeakX Business</div>
+        <div class="email-subj">Welcome to SpeakX! Your premium access is ready</div>
+        <div class="email-time">Just now</div>
+      </div>
+      <i class="fas fa-chevron-right" style="color:#ccc;margin-top:4px"></i>
+    </div>
+    <div class="sim-email-row" style="opacity:.5">
+      <div style="width:8px"></div>
+      <div style="flex:1">
+        <div class="email-from">Google</div>
+        <div class="email-subj">Security alert: New sign-in detected</div>
+        <div class="email-time">2 hrs ago</div>
+      </div>
+    </div>
+    <div class="sim-email-row" style="opacity:.4">
+      <div style="width:8px"></div>
+      <div style="flex:1">
+        <div class="email-from">LinkedIn</div>
+        <div class="email-subj">5 people viewed your profile</div>
+        <div class="email-time">Yesterday</div>
+      </div>
+    </div>`;
+}
+
+function openSimInvite(){
+  const user=D.users[D.simUser];
+  document.getElementById('simInviteBody').innerHTML=`
+    <div class="invite-logo">SpeakX</div>
+    <div class="invite-card">
+      <h4>Hi ${user.name.split(' ')[0]}! 👋</h4>
+      <p>Great news! Your premium SpeakX account has been created successfully. You are now just one step away from practicing with your personal AI Tutor.</p>
+      <p style="margin-top:8px"><strong>Next Steps:</strong></p>
+      <p>1. Download the SpeakX App</p>
+      <p>2. Login using your mobile number: <strong>+91 ${user.phone}</strong></p>
+      <p style="margin-top:8px;font-size:12px;color:#888">Note: Your subscription has already been activated.</p>
+    </div>
+    <button class="invite-dl-btn" onclick="showAppStore()"><i class="fab fa-google-play" style="margin-right:6px"></i> Download SpeakX App</button>`;
+  showLearnerScreen('lsInvite');
+}
+
+function showAppStore(){
+  updateSimNarration(2);
+  document.getElementById('simStoreBody').innerHTML=`
+    <div class="sim-store-card">
+      <div class="store-icon"><i class="fas fa-comments"></i></div>
+      <h4>SpeakX — AI English Coach</h4>
+      <div class="store-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i> 4.8</div>
+      <div class="store-meta">1M+ Downloads • Education • Rated E</div>
+      <button class="sim-store-install" id="simInstallBtn" onclick="installApp()"><i class="fas fa-download" style="margin-right:6px"></i> Install</button>
+      <div class="sim-progress-bar" id="simInstallBar"><div class="fill"></div></div>
+    </div>`;
+  showLearnerScreen('lsAppStore');
+}
+
+function installApp(){
+  const btn=document.getElementById('simInstallBtn');
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Installing...';
+  const bar=document.querySelector('#simInstallBar .fill');
+  bar.style.width='100%';
+  setTimeout(()=>{
+    btn.disabled=false;btn.className='sim-store-install opening';
+    btn.innerHTML='<i class="fas fa-external-link-alt" style="margin-right:6px"></i> Open';
+    btn.onclick=openApp;
+  },1800);
+}
+
+function openApp(){
+  updateSimNarration(3);
+  showSimLogin();
+}
+
+function showSimLogin(){
+  const user=D.users[D.simUser];
+  document.getElementById('simPhone').value=user.phone;
+  showLearnerScreen('lsLoginSim');
+}
+
+function submitSimLogin(){
+  const ph=document.getElementById('simPhone').value.trim();
+  if(!/^[6-9]\d{9}$/.test(ph)){toast('Enter valid 10-digit phone number','error');return}
+  D.simOtp=String(Math.floor(1000+Math.random()*9000));
+  updateSimNarration(4);
+  document.getElementById('simOtpSubtitle').textContent='Code sent to +91 '+ph.slice(0,2)+'••••'+ph.slice(6);
+  document.getElementById('simOtpHint').textContent='Demo OTP: '+D.simOtp;
+  const c=document.getElementById('simOtpInputs');c.innerHTML='';
+  for(let i=0;i<4;i++){const inp=document.createElement('input');inp.type='text';inp.maxLength=1;
+    inp.addEventListener('input',function(){this.value=this.value.replace(/\D/,'');if(this.value){this.classList.add('filled');const nx=this.nextElementSibling;if(nx)nx.focus()}else this.classList.remove('filled')});
+    inp.addEventListener('keydown',function(e){if(e.key==='Backspace'&&!this.value){const pv=this.previousElementSibling;if(pv){pv.focus();pv.value='';pv.classList.remove('filled')}}});
+    c.appendChild(inp)}
+  showLearnerScreen('lsOtpSim');
+  c.querySelector('input').focus();
+}
+
+function verifySimOtp(){
+  const inputs=document.querySelectorAll('#simOtpInputs input');
+  const entered=Array.from(inputs).map(i=>i.value).join('');
+  if(entered!==D.simOtp){inputs.forEach(i=>{i.style.borderColor='#f44336';setTimeout(()=>i.style.borderColor='',800)});return}
+  inputs.forEach(i=>{i.style.borderColor='#4caf50';i.classList.add('filled')});
+  setTimeout(()=>{updateSimNarration(5);startAssessment()},600);
+}
+
+const assessQ=[
+  {q:'Choose the correct form: "She ___ to the office every day."',opts:['go','goes','going','gone'],ans:1,cat:'Grammar'},
+  {q:'What does "proficient" mean?',opts:['Beginner','Skilled','Lazy','Confused'],ans:1,cat:'Vocabulary'},
+  {q:'"Can I get a ___ of water, please?"',opts:['glass','grass','class','gas'],ans:0,cat:'Vocabulary'},
+  {q:'Choose the correct sentence:',opts:['"He don\'t like coffee."','"He doesn\'t likes coffee."','"He doesn\'t like coffee."','"He not like coffee."'],ans:2,cat:'Grammar'},
+  {q:'"The meeting was ___ because the client cancelled."',opts:['postponed','happened','created','enjoyed'],ans:0,cat:'Reading'}
+];
+
+function startAssessment(){D.simQuizIdx=0;D.simQuizScore=0;renderAssessQ()}
+
+function renderAssessQ(){
+  const i=D.simQuizIdx;const q=assessQ[i];
+  document.getElementById('simAssessBody').innerHTML=`
+    <div class="assess-header"><h4><i class="fas fa-clipboard-check" style="color:var(--orange);margin-right:6px"></i> Proficiency Assessment</h4><p>Question ${i+1} of ${assessQ.length} • ${q.cat}</p></div>
+    <div class="assess-progress"><div class="fill" style="width:${(i/assessQ.length)*100}%"></div></div>
+    <div class="assess-q">${q.q}</div>
+    ${q.opts.map((o,j)=>`<button class="assess-opt" onclick="selectAnswer(${j})">${o}</button>`).join('')}`;
+  showLearnerScreen('lsAssessment');
+}
+
+function selectAnswer(idx){
+  const q=assessQ[D.simQuizIdx];const btns=document.querySelectorAll('.assess-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(idx===q.ans){btns[idx].classList.add('correct');D.simQuizScore++}
+  else{btns[idx].classList.add('wrong');btns[q.ans].classList.add('correct')}
+  setTimeout(()=>{D.simQuizIdx++;if(D.simQuizIdx<assessQ.length)renderAssessQ();else showLevelResult()},1000);
+}
+
+function showLevelResult(){
+  const pct=Math.round(D.simQuizScore/assessQ.length*100);
+  let level='A1',desc='Beginner';
+  if(pct>=80){level='B2';desc='Upper Intermediate'}else if(pct>=60){level='B1';desc='Intermediate'}else if(pct>=40){level='A2';desc='Elementary'}
+  document.getElementById('simLevelBody').innerHTML=`
+    <div class="level-badge">${level}</div>
+    <h4>${desc} Level</h4>
+    <p>Score: ${D.simQuizScore}/${assessQ.length} correct (${pct}%)<br>Your personalised learning path is ready!</p>
+    <div class="level-course"><i class="fas fa-graduation-cap"></i><span>${D.simCourse}</span></div>
+    <button class="sim-start-btn" onclick="startExercises()"><i class="fas fa-play" style="margin-right:6px"></i> Start Learning</button>`;
+  showLearnerScreen('lsLevel');
+}
+
+const simExercises=[
+  {type:'vocab',badge:'Vocabulary',q:'What does "collaborate" mean?',opts:['To argue','To work together','To ignore','To compete'],ans:1},
+  {type:'quiz',badge:'Quiz',q:'She is very ___ in English after 3 months of practice.',opts:['fluent','flew','float','flat'],ans:0},
+  {type:'speak',badge:'Speaking',prompt:'Read aloud: "Good morning, I would like to schedule a meeting with the team."'},
+  {type:'ai',badge:'AI Conversation',prompt:'Your manager asks: "Can you present the quarterly report to the client tomorrow?" How do you respond?'}
+];
+
+function startExercises(){D.simExIdx=0;updateSimNarration(6);showExercise(0)}
+
+function showExercise(idx){
+  D.simExIdx=idx;const ex=simExercises[idx];const body=document.getElementById('simExBody');
+  const header=`<div class="sim-ex"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="ex-badge ${ex.type}">${ex.badge}</span><span style="font-size:11px;color:#888">Exercise ${idx+1} of ${simExercises.length}</span></div>`;
+  if(ex.type==='vocab'||ex.type==='quiz'){
+    body.innerHTML=header+`<div class="ex-q">${ex.q}</div>${ex.opts.map((o,j)=>`<button class="ex-opt" onclick="selectExAnswer(${j})">${o}</button>`).join('')}</div>`;
+  }else if(ex.type==='speak'){
+    body.innerHTML=header+`<div class="ex-q">${ex.prompt}</div><div class="sim-mic-area"><button class="sim-mic-btn" id="simMicBtn" onclick="doSpeaking()"><i class="fas fa-microphone"></i></button><p style="font-size:11px;color:#888;margin-top:8px">Tap to start speaking</p><div class="sim-wave" id="simWave" style="display:none"><span></span><span></span><span></span><span></span><span></span></div><div id="simSpeakResult"></div></div></div>`;
+  }else if(ex.type==='ai'){
+    body.innerHTML=`<div class="sim-chat-area"><div class="sim-chat-msgs" id="simChatMsgs"><div class="sim-chat-msg ai"><strong>SIA:</strong> ${ex.prompt}</div></div><div class="sim-chat-input"><input type="text" id="simChatInput" placeholder="Type your response..." onkeydown="if(event.key==='Enter')sendSimChat()"><button onclick="sendSimChat()"><i class="fas fa-paper-plane"></i></button></div></div>`;
+  }
+  showLearnerScreen('lsExercise');
+}
+
+function selectExAnswer(idx){
+  const ex=simExercises[D.simExIdx];const btns=document.querySelectorAll('.ex-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(idx===ex.ans){btns[idx].classList.add('correct')}else{btns[idx].classList.add('wrong');btns[ex.ans].classList.add('correct')}
+  setTimeout(()=>advanceExercise(),1200);
+}
+
+function doSpeaking(){
+  const btn=document.getElementById('simMicBtn');
+  btn.classList.add('recording');btn.innerHTML='<i class="fas fa-stop"></i>';
+  document.getElementById('simWave').style.display='flex';
+  setTimeout(()=>{
+    btn.classList.remove('recording');btn.innerHTML='<i class="fas fa-check"></i>';btn.disabled=true;
+    document.getElementById('simWave').style.display='none';
+    document.getElementById('simSpeakResult').innerHTML=`<div class="sim-score-card"><div class="score-num">88<span style="font-size:16px">/100</span></div><div class="score-label">Pronunciation Score</div></div>`;
+    setTimeout(()=>advanceExercise(),1500);
+  },2500);
+}
+
+function sendSimChat(){
+  const inp=document.getElementById('simChatInput');const v=inp.value.trim();
+  if(!v)return;
+  const msgs=document.getElementById('simChatMsgs');
+  msgs.innerHTML+=`<div class="sim-chat-msg user">${v}</div>`;inp.value='';
+  msgs.scrollTop=msgs.scrollHeight;
+  setTimeout(()=>{
+    msgs.innerHTML+=`<div class="sim-chat-msg ai"><strong>SIA:</strong> Great response! You showed confidence and professionalism. Your grammar and vocabulary were excellent.<br><br><strong>Score: 90/100</strong> ⭐</div>`;
+    msgs.scrollTop=msgs.scrollHeight;
+    document.querySelector('.sim-chat-input').innerHTML='<div style="text-align:center;padding:8px;color:#4caf50;font-weight:600;font-size:12px"><i class="fas fa-check-circle"></i> Exercise Complete!</div>';
+    setTimeout(()=>advanceExercise(),1500);
+  },1200);
+}
+
+function advanceExercise(){
+  if(D.simExIdx<simExercises.length-1){showExercise(D.simExIdx+1)}
+  else{showTopicComplete()}
+}
+
+function showTopicComplete(){
+  updateSimNarration(7);
+  const user=D.users[D.simUser];
+  const oldProgress=user.progress;
+  user.progress=Math.min(oldProgress+35,100);
+  if(user.status==='invited'||user.status==='not_started')user.status='started';
+  document.getElementById('simCompleteBody').innerHTML=`
+    <div class="coin-icon">🎉</div>
+    <h4>Topic Completed!</h4>
+    <p>Great job finishing all exercises in ${D.simCourse}</p>
+    <div class="score-row"><span class="lbl">Vocabulary</span><span class="val" style="color:#1565c0">✓ Correct</span></div>
+    <div class="score-row"><span class="lbl">Quiz</span><span class="val" style="color:#e65100">✓ Correct</span></div>
+    <div class="score-row"><span class="lbl">Speaking</span><span class="val" style="color:#2e7d32">88/100</span></div>
+    <div class="score-row"><span class="lbl">AI Conversation</span><span class="val" style="color:#7b1fa2">90/100</span></div>
+    <div class="score-row" style="border-top:2px solid var(--orange);margin-top:8px;padding-top:10px"><span class="lbl" style="font-weight:700;color:var(--text)">Progress Update</span><span class="val" style="color:var(--orange)">${oldProgress}% → ${user.progress}%</span></div>
+    <button class="sim-dashboard-btn" onclick="seeDashboardImpact()"><i class="fas fa-chart-line" style="margin-right:6px"></i> See Dashboard Impact</button>
+    <button class="sim-reset-btn" onclick="resetSimulator()"><i class="fas fa-redo" style="margin-right:6px"></i> Run Simulator Again</button>`;
+  showLearnerScreen('lsComplete');
+}
+
+function seeDashboardImpact(){
+  D.simActive=false;
+  document.getElementById('learnerInfoDefault').style.display='';
+  document.getElementById('simNarrationPanel').classList.remove('active');
+  showSec(document.querySelector('[data-sec=secOverview]'));
+  renderOverview();renderUsers();
+  toast('Dashboard updated with live learner progress!','success');
+}
+
+function resetSimulator(){
+  D.simActive=false;D.simStep=0;D.simExIdx=0;D.simQuizIdx=0;D.simQuizScore=0;
+  document.getElementById('learnerInfoDefault').style.display='';
+  document.getElementById('simNarrationPanel').classList.remove('active');
+  showLearnerScreen('lsHome');
+  showSec(document.querySelector('[data-sec=secAssign]'));
+  document.getElementById('simPrompt').style.display='none';
+  toast('Simulator reset — assign a course to run again!','info');
+}
+
+function populateSettings(){document.getElementById('setOrg').value=D.signup.org||'';document.getElementById('setContact').value=D.signup.name||'';document.getElementById('setEmail').value=D.signup.email||'';document.getElementById('setPhone').value=D.signup.phone||''}
+function saveSettings(){const org=document.getElementById('setOrg').value.trim(),name=document.getElementById('setContact').value.trim(),email=document.getElementById('setEmail').value.trim(),phone=document.getElementById('setPhone').value.replace(/^0/,'').trim();if(!org){toast('Organisation name is required.','error');return}if(name.length<2||!/^[A-Za-z][A-Za-z.\s]+$/.test(name)){toast('Name must be 2+ chars, only letters/spaces/dots.','error');return}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Please enter a valid email.','error');return}if(!/^[6-9]\d{9}$/.test(phone)){toast('Phone must be 10 digits starting with 6-9.','error');return}D.signup.org=org;D.signup.name=name;D.signup.email=email;D.signup.phone=phone;updateSidebar();toast('Settings saved!','success')}
+
+function renderBilling(){const d=new Date(),fmt=d=>d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}),r=new Date(d);r.setFullYear(r.getFullYear()+1);document.getElementById('billPlan').textContent=(D.mode==='annual'?'Annual':'Monthly')+' — Pro';document.getElementById('billStart').textContent=fmt(d);document.getElementById('billRenew').textContent=fmt(r);document.getElementById('billPrice').textContent='₹'+D.price+'/mo';document.getElementById('billSeats').textContent=D.learners;document.getElementById('billUsed').textContent=D.users.length;const ut=Math.round(D.users.length/D.learners*100);document.getElementById('billUtil').textContent=ut+'%';document.getElementById('billUtilBar').style.width=ut+'%';const am=D.price*D.learners;document.getElementById('invoiceBody').innerHTML=`<tr><td>INV-2026-001</td><td>Mar 2026</td><td>₹${am.toLocaleString('en-IN')}</td><td><span class="status-badge status-active">Paid</span></td><td><a class="dl-link" onclick="downloadInvoice('INV-2026-001')">Download PDF</a></td></tr><tr><td>INV-2026-002</td><td>Apr 2026</td><td>₹${am.toLocaleString('en-IN')}</td><td><span class="status-badge status-pending">Pending</span></td><td>—</td></tr>`}
+
+function doLogout(){toast('Logged out successfully.','info');setTimeout(()=>nav('pageLanding'),500)}
+
+/* ===== LOGIN FUNCTIONS ===== */
+function toggleLoginMode(mode){D.loginMode=mode;document.getElementById('loginPhoneField').style.display=mode==='phone'?'block':'none';document.getElementById('loginEmailField').style.display=mode==='email'?'block':'none';document.getElementById('loginTogglePhone').className='toggle-btn'+(mode==='phone'?' active':'');document.getElementById('loginToggleEmail').className='toggle-btn'+(mode==='email'?' active':'')}
+function submitLogin(){const mode=D.loginMode||'phone';let ok=true;
+  if(mode==='phone'){const p=document.getElementById('liPhone');const ph=p.value.replace(/^0/,'').trim();p.closest('.form-group').classList.remove('error');if(!/^[6-9]\d{9}$/.test(ph)){p.closest('.form-group').classList.add('error');ok=false}if(!ok)return;D.signup.phone=ph;D.signup.email='admin@company.com';D.signup.name='Admin User';D.signup.org='Your Company'}
+  else{const e=document.getElementById('liEmail');e.parentElement.classList.remove('error');if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.value.trim())){e.parentElement.classList.add('error');ok=false}if(!ok)return;D.signup.email=e.value.trim();D.signup.phone='9999999999';D.signup.name='Admin User';D.signup.org='Your Company'}
+  D.emailOtp=String(Math.floor(100000+Math.random()*900000));D.phoneOtp=D.emailOtp;D.otpAttempts=0;D.isLogin=true;
+  showLoad('Sending verification code...');setTimeout(()=>{hideLoad();nav('pageOtp');buildLoginOtpPage()},1200)}
+function buildLoginOtpPage(){const id=D.loginMode==='email'?D.signup.email:('+91 ****'+D.signup.phone.slice(6));document.getElementById('otpSubtitle').innerHTML='Enter the 6-digit code sent to <b>'+id+'</b>';document.getElementById('emailHint').textContent='Demo OTP: '+D.emailOtp;document.getElementById('phoneHint').textContent='Demo OTP: '+D.phoneOtp;buildOtpInputs('emailOtpInputs');buildOtpInputs('phoneOtpInputs');document.getElementById('otpError').className='otp-error';startOtpTimer()}
+
+/* ===== FAQ FUNCTIONS ===== */
+const faqData=[
+  {q:'What is the SpeakX Admin Dashboard?',a:'The SpeakX Admin Dashboard is your control panel for managing your organisation\'s English training program. You can add learners, create courses, track progress, and manage your subscription — all from one place.'},
+  {q:'How do I add a new learner?',a:'Click the "Add User" button in the User Management section. You can add a single learner by entering their name, email, and phone number, or bulk import multiple learners by pasting data from Excel (Name, Email, Phone — one row per learner).'},
+  {q:'How do I upload many learners together?',a:'Go to User Management → Bulk Import. Paste data from Excel in the format: Name, Email, Phone (comma or tab separated). The system validates each entry and highlights errors for you to fix before importing.'},
+  {q:'How do I create a custom course?',a:'Use the Course Creator: (1) Upload relevant documents like SOPs or training materials, (2) Chat with the AI to refine the course scope, (3) Review and publish the generated course. The AI creates a structured course with modules, exercises, and practice scenarios.'},
+  {q:'How does the AI Course Creator work?',a:'Upload your organisation\'s training documents (PDF, DOCX, TXT). The AI reads and analyses these, asks a few discovery questions about your team\'s needs, then generates a fully structured course with topics, subtopics, and practice scenarios.'},
+  {q:'How do I assign a course to learners?',a:'Go to Assign Course, select a course from the dropdown, choose whether to assign to all learners, new users only, or inactive users, and click Assign. Learners will see the course in their app immediately.'},
+  {q:'What is the pricing model?',a:'SpeakX uses per-learner pricing. Choose between Monthly (₹199/learner/month) or Annual plans with volume discounts: 5-99 learners at ₹199, 100-249 at ₹149, and 250+ at ₹99 per learner per month.'},
+  {q:'Is there a free trial?',a:'Yes! Every new organisation gets a 7-day free trial with full access to all features. No credit card is required to start the trial.'},
+  {q:'How do learners access the app?',a:'Once added, learners receive a welcome message via email and WhatsApp with a download link. They can log in using their registered phone number and start learning immediately.'},
+  {q:'What languages are supported?',a:'SpeakX supports English learning with instructions in 7 Indian languages: Hindi, Tamil, Telugu, Kannada, Bengali, Marathi, and Gujarati. Courses are aligned to the CEFR framework (A1 to C2).'},
+  {q:'How do I track learner progress?',a:'The Dashboard Overview shows key metrics including total learners, exercise completion, active time, and top performers. Click on any learner\'s name to see their detailed profile with daily activity data.'},
+  {q:'What if a learner hasn\'t started?',a:'The "Where to Focus" section on your dashboard highlights inactive users. You can resend invites or send reminders with one click to nudge them to start learning.'},
+  {q:'How do I download reports?',a:'Click the "Download Report" button in the Overview section. Reports are available in CSV and Excel formats, containing learner progress, time spent, exercises completed, and more.'},
+  {q:'Can I cancel my subscription?',a:'Yes, go to Plan & Billing → Cancel Subscription. Your access continues until the end of the current billing period. No further charges will apply.'}
+];
+function renderFaqs(){const c=document.getElementById('faqList');if(!c)return;c.innerHTML=faqData.map((f,i)=>`<div class="faq-item" style="border-bottom:1px solid var(--border)"><div class="faq-q" onclick="toggleFaq(${i})" style="padding:18px 24px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:600;color:var(--dark);transition:color .2s"><span>${f.q}</span><i class="fas fa-chevron-down" id="faqIcon${i}" style="color:var(--gray);transition:transform .3s;font-size:13px"></i></div><div class="faq-a" id="faqA${i}" style="max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s;padding:0 24px"><p style="font-size:14px;color:var(--gray);line-height:1.8;padding-bottom:18px">${f.a}</p></div></div>`).join('')}
+function toggleFaq(i){const a=document.getElementById('faqA'+i);const icon=document.getElementById('faqIcon'+i);const isOpen=a.style.maxHeight&&a.style.maxHeight!=='0px';faqData.forEach((_,j)=>{document.getElementById('faqA'+j).style.maxHeight='0px';document.getElementById('faqIcon'+j).style.transform='rotate(0deg)'});if(!isOpen){a.style.maxHeight=a.scrollHeight+'px';icon.style.transform='rotate(180deg)'}}
+
+/* ===== CONTACT FORM ===== */
+function sendContactMsg(){const s=document.getElementById('contactSubject').value,m=document.getElementById('contactMsg').value.trim();if(!s){toast('Please select a subject.','error');return}if(!m){toast('Please enter a message.','error');return}showLoad('Sending message...');setTimeout(()=>{hideLoad();toast('Message sent! Our team will respond within 24 hours.','success');document.getElementById('contactSubject').value='';document.getElementById('contactMsg').value=''},1200)}
+
+/* ===== DOWNLOAD FUNCTIONS ===== */
+function downloadFile(filename,label){toast('Downloading '+label+'...','info');setTimeout(()=>toast(label+' downloaded successfully!','success'),1500)}
+function downloadReport(format){const f=format||'csv';showLoad('Generating '+f.toUpperCase()+' report...');setTimeout(()=>{hideLoad();const sm={active:'Active',started:'Exercise Started',not_started:'Not Yet Started',inactive:'Inactive',invited:'Invite Sent'};const header='Name,Email,Phone,Status,Last 7-day Time,Total Sentences,Total Exercises,Progress %';const rows=D.users.map(u=>[u.name,u.email,u.phone,sm[u.status]||u.status,Math.round(u.progress*0.26*7)+' min',Math.round(u.progress*103),Math.round(u.progress*11.2),u.progress+'%'].join(','));const csv=header+'\n'+rows.join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='SpeakX_Report_'+new Date().toISOString().slice(0,10)+'.'+f;a.click();URL.revokeObjectURL(url);toast('Report downloaded!','success')},1500)}
+
+/* ===== MODAL FUNCTIONS ===== */
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+function openModifySeats(){document.getElementById('modifySeatsModal').classList.add('show')}
+function confirmModifySeats(){const nw=parseInt(document.getElementById('msNewSeats').value);if(!nw||nw<5){toast('Minimum 5 seats required.','error');return}if(nw>500){closeModal('modifySeatsModal');toast('For 500+ seats, please contact sales.','info');return}D.learners=nw;closeModal('modifySeatsModal');renderBilling();updateSeatCount();toast('Seats updated to '+nw+'!','success')}
+function openCancelSub(){const d=new Date();d.setFullYear(d.getFullYear()+1);document.getElementById('cancelInfo').innerHTML='<i class="fas fa-calendar"></i> Your access will continue until <b>'+d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+'</b>. You will not be charged after this date.';document.getElementById('cancelSubModal').classList.add('show')}
+function confirmCancelSub(){closeModal('cancelSubModal');showLoad('Cancelling subscription...');setTimeout(()=>{hideLoad();toast('Subscription cancelled. Access continues until renewal date.','info')},1500)}
+function downloadInvoice(inv){showLoad('Generating invoice '+inv+'...');setTimeout(()=>{hideLoad();const txt='INVOICE: '+inv+'\nOrganisation: '+(D.signup.org||'SpeakX Corp')+'\nPlan: '+(D.mode==='annual'?'Annual':'Monthly')+'\nLearners: '+D.learners+'\nPrice/Learner: ₹'+D.price+'/mo\nSubtotal: ₹'+(D.price*D.learners).toLocaleString('en-IN')+'\nGST (18%): ₹'+Math.round(D.price*D.learners*0.18).toLocaleString('en-IN')+'\nTotal: ₹'+Math.round(D.price*D.learners*1.18).toLocaleString('en-IN')+'\nStatus: Paid\nDate: '+new Date().toLocaleDateString('en-IN');const blob=new Blob([txt],{type:'text/plain'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=inv+'.txt';a.click();URL.revokeObjectURL(url);toast('Invoice '+inv+' downloaded!','success')},1200)}
+function saveBillingInfo(){const gst=document.getElementById('billGst').value.trim(),nm=document.getElementById('billName').value.trim(),em=document.getElementById('billEmail').value.trim(),ph=document.getElementById('billPhone')?document.getElementById('billPhone').value.replace(/^0/,'').trim():'';if(!nm||nm.length<2){toast('Please enter billing name (min 2 chars).','error');return}if(em&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){toast('Please enter a valid billing email.','error');return}if(ph&&!/^[6-9]\d{9}$/.test(ph)){toast('Billing phone must be 10 digits starting with 6-9.','error');return}if(gst&&!/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}[Z]{1}[A-Z\d]{1}$/.test(gst.toUpperCase())){toast('Please enter a valid 15-digit GSTIN.','error');return}toast('Billing information saved!','success')}
+
+function animateStats(){document.querySelectorAll('.stat-num[data-target]').forEach(el=>{const obs=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){const target=parseFloat(el.dataset.target);const isF=target%1!==0;const start=performance.now();function tick(now){const p=Math.min((now-start)/2000,1);const e=1-Math.pow(1-p,3);const cur=e*target;el.textContent=isF?cur.toFixed(1):Math.round(cur).toLocaleString('en-IN');if(p<1)requestAnimationFrame(tick);else{el.textContent=isF?target.toFixed(1):target.toLocaleString('en-IN');if(target>=500&&target<1000)el.textContent+='+';if(target>=200000)el.textContent=target.toLocaleString('en-IN')+'+'}}requestAnimationFrame(tick);obs.unobserve(el)}})},{threshold:0.3});obs.observe(el)})}
+
+updatePricing();animateStats();
+</script>
+</body>
+</html>
