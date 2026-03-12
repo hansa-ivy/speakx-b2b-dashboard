@@ -467,6 +467,25 @@ table tr:last-child td{border-bottom:none}
 .dept-summary-card .dept-bar{height:6px;background:var(--border);border-radius:3px;margin-top:10px}
 .dept-summary-card .dept-bar .fill{height:100%;border-radius:3px;background:var(--orange);transition:width .6s cubic-bezier(0.34,1.56,0.64,1)}
 
+/* Adoption Health Score */
+.adoption-score-card{background:linear-gradient(135deg,var(--dark),var(--dark2));border-radius:var(--radius);padding:32px;box-shadow:var(--shadow-md);margin-bottom:24px;display:grid;grid-template-columns:auto 1fr auto;gap:32px;align-items:center;color:var(--white)}
+.adoption-ring{width:120px;height:120px;position:relative}
+.adoption-ring svg{transform:rotate(-90deg)}
+.adoption-ring .score-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.adoption-ring .score-num{font-size:36px;font-weight:800;color:var(--white);line-height:1}
+.adoption-ring .score-label{font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px}
+.adoption-breakdown{display:flex;flex-direction:column;gap:12px}
+.adoption-factor{display:flex;align-items:center;gap:12px}
+.adoption-factor .factor-label{font-size:13px;color:rgba(255,255,255,0.7);width:140px}
+.adoption-factor .factor-bar{flex:1;height:8px;background:rgba(255,255,255,0.15);border-radius:4px;overflow:hidden}
+.adoption-factor .factor-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(0.34,1.56,0.64,1)}
+.adoption-factor .factor-val{font-size:13px;font-weight:700;width:40px;text-align:right}
+.adoption-tips{background:rgba(255,255,255,0.08);border-radius:var(--radius-sm);padding:16px;max-width:220px}
+.adoption-tips h4{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--orange)}
+.adoption-tips li{font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:6px;padding-left:14px;position:relative;line-height:1.5}
+.adoption-tips li::before{content:'→';position:absolute;left:0;color:var(--orange)}
+@media(max-width:900px){.adoption-score-card{grid-template-columns:1fr;text-align:center}.adoption-ring{margin:0 auto}.adoption-tips{max-width:100%}}
+
 /* Responsive */
 @media(max-width:1024px){
   .signup-page.active{grid-template-columns:1fr!important}
@@ -854,6 +873,7 @@ table tr:last-child td{border-bottom:none}
       </div>
       <!-- ALL LEARNERS VIEW -->
       <div id="overviewAll">
+        <div class="adoption-score-card" id="adoptionScoreCard"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px" id="focusCards"></div>
         <div class="metric-cards" id="metricCards"></div>
         <div style="background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:24px" id="top3Card"></div>
@@ -1416,7 +1436,42 @@ function downloadDeptReport(format){
   },1500);
 }
 
-function renderOverview(){const u=D.users,tot=u.length,ex=u.reduce((s,x)=>s+Math.round(x.progress*0.48),0),avg=tot?Math.round(u.reduce((s,x)=>s+x.progress*0.26,0)/tot):0,comp=tot?Math.round(u.filter(x=>x.progress>=80).length/tot*100):0;
+/* ===== ADOPTION HEALTH SCORE ===== */
+function renderAdoptionScore(){
+  const u=D.users;const total=u.length;if(!total)return;
+  const activePct=Math.round(u.filter(x=>x.status==='active'||x.status==='started').length/total*100);
+  const engagementPct=Math.round(u.filter(x=>x.progress>0).length/total*100);
+  const avgProgress=Math.round(u.reduce((s,x)=>s+x.progress,0)/total);
+  const completionPct=Math.round(u.filter(x=>x.progress>=80).length/total*100);
+  const score=Math.round(activePct*0.3+engagementPct*0.25+avgProgress*0.25+completionPct*0.2);
+  const color=score>=70?'var(--green)':score>=40?'var(--yellow)':'var(--red)';
+  const label=score>=70?'Healthy':score>=40?'Needs Attention':'Critical';
+  const factors=[{name:'Activation Rate',val:activePct},{name:'Engagement Rate',val:engagementPct},{name:'Avg Progress',val:avgProgress},{name:'Completion Rate',val:completionPct}];
+  const weakest=[...factors].sort((a,b)=>a.val-b.val)[0];
+  const tips={'Activation Rate':['Send re-invite emails to pending users','Schedule a kickoff call with team leads','Share app walkthrough video'],'Engagement Rate':['Enable WhatsApp reminders for inactive users','Set up daily 15-min learning goals','Create a team leaderboard challenge'],'Avg Progress':['Assign shorter, focused courses first','Add department-specific content','Enable AI practice sessions'],'Completion Rate':['Set course deadlines with managers','Recognize top performers publicly','Simplify difficult modules']};
+  const circumference=2*Math.PI*52;const offset=circumference-(score/100)*circumference;
+  document.getElementById('adoptionScoreCard').innerHTML=`
+    <div class="adoption-ring">
+      <svg width="120" height="120" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10"/>
+        <circle cx="60" cy="60" r="52" fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" style="transition:stroke-dashoffset 1.2s cubic-bezier(0.34,1.56,0.64,1)"/>
+      </svg>
+      <div class="score-text">
+        <div class="score-num">${score}</div>
+        <div class="score-label">${label}</div>
+      </div>
+    </div>
+    <div class="adoption-breakdown">
+      <div style="margin-bottom:4px"><span style="font-size:18px;font-weight:700">Adoption Health Score</span><br><span style="font-size:13px;opacity:0.6">Based on activation, engagement, progress & completion</span></div>
+      ${factors.map(f=>`<div class="adoption-factor"><span class="factor-label">${f.name}</span><div class="factor-bar"><div class="factor-fill" style="width:${f.val}%;background:${f.val>=70?'var(--green)':f.val>=40?'var(--yellow)':'var(--red)'}"></div></div><span class="factor-val">${f.val}%</span></div>`).join('')}
+    </div>
+    <div class="adoption-tips">
+      <h4><i class="fas fa-lightbulb" style="margin-right:6px"></i>Improve ${weakest.name}</h4>
+      <ul style="list-style:none;padding:0;margin:0">${(tips[weakest.name]||[]).map(t=>`<li>${t}</li>`).join('')}</ul>
+    </div>`;
+}
+
+function renderOverview(){renderAdoptionScore();const u=D.users,tot=u.length,ex=u.reduce((s,x)=>s+Math.round(x.progress*0.48),0),avg=tot?Math.round(u.reduce((s,x)=>s+x.progress*0.26,0)/tot):0,comp=tot?Math.round(u.filter(x=>x.progress>=80).length/tot*100):0;
   /* Focus Cards */
   const inactive=u.filter(x=>x.status==='invited'||x.status==='not_started').length;const lowEng=u.filter(x=>(x.status==='active'||x.status==='started')&&x.progress<30).length;
   document.getElementById('focusCards').innerHTML=`<div class="animate-in" style="background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border-left:4px solid var(--yellow);transition:transform .25s ease,box-shadow .25s ease;animation-delay:0ms"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><i class="fas fa-exclamation-triangle" style="color:var(--yellow);font-size:18px"></i><h3 style="font-size:16px;font-weight:700;color:var(--dark)">Inactive Users</h3></div><p style="font-size:14px;color:var(--gray);margin-bottom:16px"><b style="color:var(--dark)">${inactive} learners</b> haven't started yet</p><button class="btn btn-outline btn-sm" onclick="resendAllInvites()"><i class="fas fa-paper-plane"></i> Resend Invite</button></div><div class="animate-in" style="background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border-left:4px solid var(--red);transition:transform .25s ease,box-shadow .25s ease;animation-delay:100ms"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><i class="fas fa-chart-line-down" style="color:var(--red);font-size:18px"></i><h3 style="font-size:16px;font-weight:700;color:var(--dark)">Low Engagement</h3></div><p style="font-size:14px;color:var(--gray);margin-bottom:16px"><b style="color:var(--dark)">${lowEng} learners</b> haven't exercised in last week</p><button class="btn btn-outline btn-sm" onclick="sendAllReminders()"><i class="fas fa-bell"></i> Send Reminders</button></div>`;
